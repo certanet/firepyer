@@ -2,11 +2,14 @@ import json
 import csv
 from pprint import pprint
 from time import sleep
+from datetime import datetime
 
 import requests
 
 
 requests.packages.urllib3.disable_warnings()
+
+ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29mins in secs
 
 
 class Fdm:
@@ -14,12 +17,14 @@ class Fdm:
         self.ftd_host = '192.168.98.59'
         self.username = 'admin'
         self.password = 'Admin123'
+        self.access_token = None
+        self.access_token_expiry_time = None
 
     def post_api(self, uri, data=None, additional_headers=None, get_auth=True):
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
         if get_auth:
-            headers['Authorization'] = f'Bearer {self.get_access_token()}'
+            headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
 
         try:
             response = requests.post(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
@@ -35,7 +40,7 @@ class Fdm:
         
     def get_api(self, uri, data=None, additional_headers=None):
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        headers['Authorization'] = f'Bearer {self.get_access_token()}'
+        headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
         try:
             response = requests.get(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
                                      data=data, verify=False, headers=headers)
@@ -47,20 +52,44 @@ class Fdm:
     
     def get_access_token(self):
         """
-        Requires Python 3.0 or greater and requests lib.
         Login to FTD device and obtain an access token. The access token is required so that the user can
         connect to the device to send REST API requests. 
         :return: OAUTH access token
         """
         access_token = None
+        access_token_expiry_time = None
         
         payload = f'{{"grant_type": "password", "username": "{self.username}", "password": "{self.password}"}}'
         resp = self.post_api('fdm/token', payload, get_auth=False)
         if resp is not None:
             access_token = resp.json().get('access_token')
-            print("Login successful, access_token obtained")
 
-        return access_token
+            epoch_now = datetime.timestamp(datetime.now())
+            access_token_expiry_time = epoch_now + ACCESS_TOKEN_VALID_SECS
+            
+            print(f"Login successful, access_token obtained, expires at: {datetime.fromtimestamp(access_token_expiry_time)}")
+
+        return access_token, access_token_expiry_time
+    
+    def check_get_access_token(self):
+        """
+        Checks if a valid (29mins hasn't passed since obtaining) access token exists, if not gets one
+        :return: str Either a new or the existing valid access token
+        """
+        
+        get_token = False
+        epoch_now = datetime.timestamp(datetime.now())
+
+        if self.access_token is None:
+            # No token has been generated yet
+            get_token = True
+        elif epoch_now > self.access_token_expiry_time:
+            # Token expired
+            get_token = True
+        
+        if get_token:
+            self.access_token, self.access_token_expiry_time = self.get_access_token()
+        return self.access_token
     
     def get_net_objects(self):
         return self.get_api('object/networks').json()
@@ -143,11 +172,6 @@ class Fdm:
             pprint(state)
 
         return state
-
-    def check_access_token(self):
-        # TODO This method should check the contents of self.access_token if None then get_access_token
-        # Also check self.token_time is not greater than 30mins ago, else get token again
-        return
     
     def get_bgp_general_settings(self):
         return self.get_api('devices/default/routing/bgpgeneralsettings').json()
