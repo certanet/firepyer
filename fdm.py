@@ -20,15 +20,19 @@ class Fdm:
         self.access_token = None
         self.access_token_expiry_time = None
 
-    def post_api(self, uri, data=None, additional_headers=None, get_auth=True):
+    def post_api(self, uri, data=None, additional_headers=None, get_auth=True, method='POST'):
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
         if get_auth:
             headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
 
         try:
-            response = requests.post(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
-                                     data=data, verify=False, headers=headers)
+            if method == 'POST':
+                response = requests.post(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
+                                        data=data, verify=False, headers=headers)
+            elif method == 'PUT':
+                response = requests.put(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
+                                        data=data, verify=False, headers=headers)
             pprint(response)
             if response.status_code == 200:
                 return response
@@ -37,7 +41,7 @@ class Fdm:
                 pprint(data)
                 pprint(response.json())
         except Exception as e:
-            print("Unable to POST request: {}".format(str(e)))
+            print(f"Unable to {method} request: {str(e)}")
             return None
         
     def get_api(self, uri, data=None, additional_headers=None):
@@ -93,16 +97,17 @@ class Fdm:
             self.access_token, self.access_token_expiry_time = self.get_access_token()
         return self.access_token
     
-    def get_class_by_name(self, get_class, obj_name):
+    def get_class_by_name(self, get_class, obj_name, name_field_label='name'):
         """
         Get the dict for the Class with the given name
         :param obj_name:  str The name of the object to find
+        :param name_field_label:  str The field to use as the 'name' to match on, defaults to name
         :return: dict if an object with the name is found, None if not
         """
         
         if get_class is not None:
             for obj in get_class['items']:
-                if obj['name'] == obj_name:
+                if obj[name_field_label] == obj_name:
                     return obj
         return None
     
@@ -224,6 +229,7 @@ class Fdm:
             if deployment_id is not None:
                 state = self.get_deployment_status(deployment_id)
                 while state != 'DEPLOYED':
+                    # Final states should be 'FAILED' or 'DEPLOYED'
                     sleep(10)
                     state = self.get_deployment_status(deployment_id)
                 print('Deployment complete!')
@@ -257,6 +263,49 @@ class Fdm:
         return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
                              json.dumps(bgp_settings_json))
 
+    def get_interfaces(self):
+        return self.get_api('/devices/default/interfaces').json()
+    
+    def get_interface_by_phy(self, phy_name):
+        """
+        Get the dict for a NetworkObject with the given name
+        :param net_name: str The name of the NetworkObject to find
+        :return: dict if NetworkObject is found, None if not
+        """
+        return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
+    
+    def update_interfaces(self):
+        with open('interfaces.json') as int_settings:
+            int_settings_dict = json.load(int_settings)
+        
+        for interface in int_settings_dict:
+            interface_obj = self.get_interface_by_phy(interface)
+            if interface_obj is not None:
+                interface_obj['description'] = int_settings_dict[interface]['description']
+                interface_obj['ipv4']['ipAddress']['ipAddress'] = int_settings_dict[interface]['ip']
+                interface_obj['ipv4']['ipAddress']['netmask'] = int_settings_dict[interface]['netmask']
+                
+                response = self.post_api(f'devices/default/interfaces/{interface_obj["id"]}',
+                                         data=json.dumps(interface_obj),
+                                         method='PUT')
+                if response is not None:
+                    pprint(response.json())
+    
+    def get_dhcp_servers(self):
+        return self.get_api('devicesettings/default/dhcpservercontainers').json()
+    
+    def delete_dhcp_server_pools(self):
+        dhcp_server = self.get_dhcp_servers()['items'][0]
+        dhcp_server['servers'] = []
+        return self.post_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
+                             data=json.dumps(dhcp_server),
+                             method='PUT')
+    
+    def send_command(self, cmd):
+        cmd_body = {"commandInput": cmd,
+                    "type": "Command",}
+        return self.post_api('action/command',
+                             data=json.dumps(cmd_body)).json()
 
 
 
@@ -264,10 +313,8 @@ def read_objects_csv(filename):
     objs = []
     with open(filename) as objects_csv:
         objects_dict = csv.DictReader(objects_csv)
-        # return objects_dict
         for obj in objects_dict:
             objs.append(obj)
-            # print(obj)
     return objs
 
 
