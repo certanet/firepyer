@@ -33,6 +33,8 @@ class Fdm:
             if response.status_code == 200:
                 return response
             else:
+                pprint(uri)
+                pprint(data)
                 pprint(response.json())
         except Exception as e:
             print("Unable to POST request: {}".format(str(e)))
@@ -91,8 +93,29 @@ class Fdm:
             self.access_token, self.access_token_expiry_time = self.get_access_token()
         return self.access_token
     
+    def get_class_by_name(self, get_class, obj_name):
+        """
+        Get the dict for the Class with the given name
+        :param obj_name:  str The name of the object to find
+        :return: dict if an object with the name is found, None if not
+        """
+        
+        if get_class is not None:
+            for obj in get_class['items']:
+                if obj['name'] == obj_name:
+                    return obj
+        return None
+    
     def get_net_objects(self):
         return self.get_api('object/networks').json()
+    
+    def get_net_object_by_name(self, net_name):
+        """
+        Get the dict for a NetworkObject with the given name
+        :param net_name: str The name of the NetworkObject to find
+        :return: dict if NetworkObject is found, None if not
+        """
+        return self.get_class_by_name(self.get_net_objects(), net_name)
     
     def get_object_groups(self):
         return self.get_api('object/networkgroups').json()
@@ -160,6 +183,7 @@ class Fdm:
         """
         Wait for a deployment to complete
         :param deploy_id: unique identifier for deployment task
+        :return: str Status name of the deployment, None if unable to get status
         """
         state = None
         deploy_url = 'operational/deploy'
@@ -215,16 +239,10 @@ class Fdm:
     def get_vrf_by_name(self, vrf_name):
         """
         Get the dict for a VRF with the given name
-        :param: str The name of the VRF to find
+        :param vrf_name: str The name of the VRF to find
         :return: dict if VRF is found, None if not
         """
-        vrfs = self.get_vrfs()
-        
-        if vrfs is not None:
-            for vrf in self.get_vrfs()['items']:
-                if vrf['name'] == vrf_name:
-                    return vrf
-        return None
+        return self.get_class_by_name(self.get_vrfs(), vrf_name)
 
     def get_bgp_settings(self):
         vrf_id = self.get_vrf_by_name('Global')['id']
@@ -232,41 +250,12 @@ class Fdm:
         return bgp_settings.json()
     
     def set_bgp_settings(self):
-        """
-        {'addressFamilyIPv4': {'afTableMap': None,
-                                  'aggregateAddressesIPv4s': [],
-                                  'aggregateTimer': 30,
-                                  'autoSummary': False,
-                                  'bgpNextHopTriggerDelay': 5,
-                                  'bgpNextHopTriggerEnable': True,
-                                  'bgpRedistributeInternal': False,
-                                  'bgpSupressInactive': False,
-                                  'defaultInformationOrginate': False,
-                                  'distance': {'externalDistance': 20,
-                                               'internalDistance': 200,
-                                               'localDistance': 200,
-                                               'type': 'afbgpdistance'},
-                                  'distributeLists': [],
-                                  'injectMaps': [],
-                                  'maximumPaths': None,
-                                  'neighbors': [],
-                                  'networks': [],
-                                  'redistributeProtocols': [],
-                                  'scanTime': 60,
-                                  'synchronization': False,
-                                  'type': 'afipv4'},
-            'addressFamilyIPv6': None,
-            'asNumber': '65501',
-            'description': None,
-            'id': '14e174f8-4852-11eb-a06f-1b5b930bf2e3',
-            'links': {'self': 'https://192.168.98.59/api/fdm/latest/devices/default/routing/virtualrouters/42e95fbf-fd5a-42bf-a95f-bffd5a42bfd6/bgp/14e174f8-4852-11eb-a06f-1b5b930bf2e3'},
-            'name': 'bgp65501',
-            'routerId': None,
-            'type': 'bgp',
-            'version': 'pw7jyuvyju4bf'}
-        """
-        bgp_settings = {}
-    
+        with open('bgp_settings.json') as bgp_settings:
+            bgp_settings_json = json.load(bgp_settings)
+
+        vrf_id = self.get_vrf_by_name('Global')['id']
+        return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
+                             json.dumps(bgp_settings_json))
 
 
 
@@ -284,28 +273,3 @@ def read_objects_csv(filename):
 
 if __name__ == '__main__':
     fdm = Fdm()
-    
-    # objects = read_objects_csv('networks.csv')
-    # # objects = read_objects_csv('hosts.csv')
-    # for host in objects:
-    #     print(host)
-    #     pprint(fdm.create_object(**host))
-
-    # TODO HOW WILL THIS LIDT OF OBJ NAMES BE STORED IN CSV??
-    # new_group = {'name': 'api_group', 'object_names': ['Host-1']}
-    # pprint(fdm.create_network_group(**new_group))
-
-    # pprint(fdm.get_object_groups())
-
-    # pprint(fdm.get_pending_changes())
-    # pprint(fdm.get_deployment_status('052e8fbb-4846-11eb-a06f-db3f0f9aa3ac'))
-
-    # pprint(fdm.get_bgp_general_settings())
-    pprint(fdm.set_bgp_general_settings())
-    # pprint(fdm.get_bgp_general_settings())
-
-    pprint(fdm.deploy_policy())
-
-    # pprint(fdm.get_vrfs())
-    # pprint(fdm.get_vrf_by_name('Global'))
-    pprint(fdm.get_bgp_settings())
