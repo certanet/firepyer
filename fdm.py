@@ -3,6 +3,7 @@ import csv
 from pprint import pprint
 from time import sleep
 from datetime import datetime
+from itertools import zip_longest
 
 import requests
 
@@ -13,10 +14,10 @@ ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29m
 
 
 class Fdm:
-    def __init__(self):
-        self.ftd_host = '192.168.98.59'
-        self.username = 'admin'
-        self.password = 'Admin123'
+    def __init__(self, host, username, password):
+        self.ftd_host = host
+        self.username = username
+        self.password = password
         self.access_token = None
         self.access_token_expiry_time = None
 
@@ -112,7 +113,7 @@ class Fdm:
         return None
     
     def get_net_objects(self):
-        return self.get_api('object/networks').json()
+        return self.get_api('object/networks?limit=0').json()
     
     def get_net_object_by_name(self, net_name):
         """
@@ -123,7 +124,7 @@ class Fdm:
         return self.get_class_by_name(self.get_net_objects(), net_name)
     
     def get_object_groups(self):
-        return self.get_api('object/networkgroups').json()
+        return self.get_api('object/networkgroups?limit=0').json()
 
     def create_object(self, name, value, type='HOST', description=None):
 
@@ -136,23 +137,43 @@ class Fdm:
                        }
         return self.post_api('object/networks', json.dumps(host_object))
 
-    def create_network_group(self, name, object_names, description=None):
-        all_objects = self.get_net_objects()
+    def create_group(self, name, group_type, all_objects, object_names, description=None):
+        """
+        Creates a group of pre-existing Network or Port objects
+        :param name: str Name of the group being created
+        :param group_type: str Should be either network or port depending on group class
+        :param all_objects: list All API-gathered Objects that exist for the type of group class being created
+        :param object_names: list Names of objects to be added to the group
+        :param description: str Description of the group being created
+        """
 
         objects_for_group = []
 
         for obj_name in object_names:
-            for net_object in all_objects['items']:
-                if net_object['name'] == obj_name:
-                    objects_for_group.append(net_object)
+            for obj in all_objects:
+                if obj['name'] == obj_name:
+                    objects_for_group.append(obj)
         
-        network_group = {"name": name,
-                         "description": description,
-                         "objects": objects_for_group,
-                         "type": "networkobjectgroup"
-                         }
+        object_group = {"name": name,
+                        "description": description,
+                        "objects": objects_for_group,
+                        "type": f"{group_type}objectgroup"
+                        }
 
-        return self.post_api('object/networkgroups', json.dumps(network_group))
+        return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
+
+    def create_network_group(self, name, objects, description=None):
+        """
+
+        :param name: str
+        :param objects: list
+        :param description: str
+        """
+        all_objects = self.get_net_objects()
+        all_groups = self.get_object_groups()
+        all_nets = all_objects['items'] + all_groups['items']
+        
+        self.create_group(name, 'network', all_nets, objects, description)
     
     def get_pending_changes(self):
         """
@@ -306,6 +327,47 @@ class Fdm:
                     "type": "Command",}
         return self.post_api('action/command',
                              data=json.dumps(cmd_body)).json()
+    
+    def get_acp(self):
+        return self.get_api('policy/accesspolicies').json()
+    
+    def get_port_groups(self):
+        return self.get_api('object/portgroups').json()
+    
+    def get_tcp_ports(self):
+        return self.get_api('object/tcpports?limit=0').json()
+    
+    def get_udp_ports(self):
+        return self.get_api('object/udpports?limit=0').json()
+    
+    def create_port_object(self, name, port, type, description=None):
+        """
+        Creates a Port object
+        :param name: str The name of the Port object
+        :param port: str A single port number or '-' separated range of ports e.g. 80 or 8000-8008
+        :param type: str The protocol, either tcp or udp
+        :param description: str A description for the Port
+        """
+        port_object = {"name": name,
+                       "description": description,
+                       "port": port,
+                       "type": f"{type}portobject"
+                       }
+        return self.post_api(f'object/{type}ports', json.dumps(port_object))
+       
+    def create_port_group(self, name, objects, description=None):
+        """
+        Creates a PortGroup object, containing at least 1 tcp/udp Port or an existing PortGroup
+        :param name: str Name of the PortGroup
+        :param objects: list Names of the tcp/udp Port or PortGroup objects to be added to the group
+        :param description: str A description for the PortGroup
+        """
+        tcp_ports = self.get_tcp_ports()
+        udp_ports = self.get_udp_ports()
+        port_groups = self.get_port_groups()
+        all_ports = tcp_ports['items'] + udp_ports['items'] + port_groups['items']
+        
+        self.create_group(name, 'port', all_ports, objects, description)
 
 
 
@@ -318,5 +380,40 @@ def read_objects_csv(filename):
     return objs
 
 
-if __name__ == '__main__':
-    fdm = Fdm()
+def read_objectgroups_csv(filename):
+    # CSV file must be in hierarchical order, so groups of groups can be created
+    groups = []
+    with open(filename) as objects_csv:
+        objects_dict = csv.DictReader(objects_csv)
+        for obj in objects_dict:
+
+            group_exists = False
+            for group in groups:
+                if group['name'] == obj['name']:
+                    group['objects'].append(obj['objects'])
+                    group_exists = True
+                else:
+                    continue
+            
+            if not group_exists:
+                group = {'name': obj['name'],
+                         'objects': [obj['objects']],
+                         'description': obj['description']}
+                groups.append(group)
+
+    return groups
+
+
+def expand_merged_csv(filename):
+    with open(filename) as input_file:
+        input_file = csv.reader(input_file)
+
+        with open(f'output-{filename}', 'w', newline='') as output_file:
+            output_file = csv.writer(output_file)
+
+            previous_row = []
+            for row in input_file:
+                if any(row):
+                    row = [a or b for a,b in zip_longest(row, previous_row, fillvalue='')]
+                previous_row = row
+                output_file.writerow(row)
