@@ -21,19 +21,22 @@ class Fdm:
         self.access_token = None
         self.access_token_expiry_time = None
 
-    def post_api(self, uri, data=None, additional_headers=None, get_auth=True, method='POST'):
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-
+    def api_call(self, uri, method, data=None, get_auth=True, additional_headers=None):
+        # Check for http allows passing in full URL e.g. from pagination next page link
+        if 'http' not in uri:
+            uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
+        
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}        
         if get_auth:
             headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
-
+        if additional_headers:
+            headers = {**headers, **additional_headers}
+        
         try:
-            if method == 'POST':
-                response = requests.post(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
-                                        data=data, verify=False, headers=headers)
-            elif method == 'PUT':
-                response = requests.put(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
-                                        data=data, verify=False, headers=headers)
+            response = requests.request(method, uri,
+                                        data=data,
+                                        headers=headers,
+                                        verify=False)
             pprint(response)
             if response.status_code == 200:
                 return response
@@ -45,19 +48,16 @@ class Fdm:
             print(f"Unable to {method} request: {str(e)}")
             return None
         
-    def get_api(self, uri, data=None, additional_headers=None):
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
-        try:
-            response = requests.get(f"https://{self.ftd_host}/api/fdm/latest/{uri}",
-                                     data=data, verify=False, headers=headers)
-            if response.status_code == 200:
-                return response
-        except Exception as e:
-            print("Unable to GET request: {}".format(str(e)))
-            return None
+    def post_api(self, uri, data=None, get_auth=True):
+        return self.api_call(uri, 'POST', data=data, get_auth=get_auth)
     
-    def get_access_token(self):
+    def put_api(self, uri, data=None):
+        return self.api_call(uri, 'PUT', data=data)
+        
+    def get_api(self, uri, data=None):
+        return self.api_call(uri, 'GET', data=data)
+    
+    def get_access_token(self) -> str:
         """
         Login to FTD device and obtain an access token. The access token is required so that the user can
         connect to the device to send REST API requests. 
@@ -78,7 +78,7 @@ class Fdm:
 
         return access_token, access_token_expiry_time
     
-    def check_get_access_token(self):
+    def check_get_access_token(self) -> str:
         """
         Checks if a valid (29mins hasn't passed since obtaining) access token exists, if not gets one
         :return: str Either a new or the existing valid access token
@@ -98,7 +98,7 @@ class Fdm:
             self.access_token, self.access_token_expiry_time = self.get_access_token()
         return self.access_token
     
-    def get_class_by_name(self, get_class, obj_name, name_field_label='name'):
+    def get_class_by_name(self, get_class, obj_name, name_field_label='name') -> dict|None:
         """
         Get the dict for the Class with the given name
         :param obj_name:  str The name of the object to find
@@ -112,8 +112,23 @@ class Fdm:
                     return obj
         return None
     
+    def get_paged_items(self, uri) -> list:
+        response = self.get_api(uri).json()
+        all_items = response['items']
+        next_url = response['paging']['next']
+
+        while next_url:
+            response = self.get_api(next_url[0]).json()
+            all_items += response['items']
+            next_url = response['paging']['next']
+
+        return all_items
+
     def get_net_objects(self):
         return self.get_api('object/networks?limit=0').json()
+    
+    def get_net_objects_filter(self, filter):
+        return self.get_api(f'object/networks?limit=0&filter={filter}').json()
     
     def get_net_object_by_name(self, net_name):
         """
@@ -173,7 +188,7 @@ class Fdm:
         all_groups = self.get_object_groups()
         all_nets = all_objects['items'] + all_groups['items']
         
-        self.create_group(name, 'network', all_nets, objects, description)
+        return self.create_group(name, 'network', all_nets, objects, description)
     
     def get_pending_changes(self):
         """
@@ -190,7 +205,7 @@ class Fdm:
                 changes_found = True
         return changes_found
 
-    def post_deployment(self):
+    def post_deployment(self) -> str|None:
         """
         Send a deployment POST request
         :return: unique id for the deployment task
@@ -205,7 +220,7 @@ class Fdm:
             print(deploy_id)
         return deploy_id
 
-    def get_deployment_status(self, deploy_id):
+    def get_deployment_status(self, deploy_id: str) -> str|None:
         """
         Wait for a deployment to complete
         :param deploy_id: unique identifier for deployment task
@@ -227,7 +242,7 @@ class Fdm:
         return self.get_api('devices/default/routing/bgpgeneralsettings').json()
     
     def set_bgp_general_settings(self):
-        bgp_settings = {"name": "MCAPI-BgpGeneralSettings",
+        bgp_settings = {"name": "BgpGeneralSettings",
                         "asNumber": "65500",
                         # "routerId": "string",
                         # "scanTime": 0,
@@ -287,7 +302,7 @@ class Fdm:
     def get_interfaces(self):
         return self.get_api('/devices/default/interfaces').json()
     
-    def get_interface_by_phy(self, phy_name):
+    def get_interface_by_phy(self, phy_name: str):
         """
         Get the dict for a NetworkObject with the given name
         :param net_name: str The name of the NetworkObject to find
@@ -306,9 +321,8 @@ class Fdm:
                 interface_obj['ipv4']['ipAddress']['ipAddress'] = int_settings_dict[interface]['ip']
                 interface_obj['ipv4']['ipAddress']['netmask'] = int_settings_dict[interface]['netmask']
                 
-                response = self.post_api(f'devices/default/interfaces/{interface_obj["id"]}',
-                                         data=json.dumps(interface_obj),
-                                         method='PUT')
+                response = self.put_api(f'devices/default/interfaces/{interface_obj["id"]}',
+                                        data=json.dumps(interface_obj))
                 if response is not None:
                     pprint(response.json())
     
@@ -318,9 +332,8 @@ class Fdm:
     def delete_dhcp_server_pools(self):
         dhcp_server = self.get_dhcp_servers()['items'][0]
         dhcp_server['servers'] = []
-        return self.post_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
-                             data=json.dumps(dhcp_server),
-                             method='PUT')
+        return self.put_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
+                            data=json.dumps(dhcp_server))
     
     def send_command(self, cmd):
         cmd_body = {"commandInput": cmd,
@@ -330,6 +343,10 @@ class Fdm:
     
     def get_acp(self):
         return self.get_api('policy/accesspolicies').json()
+    
+    def get_access_rules(self):
+        policy_id = self.get_acp()['items'][0]['id']
+        return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
     
     def get_port_groups(self):
         return self.get_api('object/portgroups').json()
@@ -367,8 +384,7 @@ class Fdm:
         port_groups = self.get_port_groups()
         all_ports = tcp_ports['items'] + udp_ports['items'] + port_groups['items']
         
-        self.create_group(name, 'port', all_ports, objects, description)
-
+        return self.create_group(name, 'port', all_ports, objects, description)
 
 
 def read_objects_csv(filename):
