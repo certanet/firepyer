@@ -142,8 +142,8 @@ class Fdm:
         Creates a group of pre-existing Network or Port objects
         :param name: str Name of the group being created
         :param group_type: str Should be either network or port depending on group class
-        :param all_objects: list All API-gathered Objects that exist for the type of group class being created
-        :param object_names: list Names of objects to be added to the group
+        :param all_objects: [Obj] All API-gathered Objects that exist for the type of group class being created
+        :param object_names: [str] Names of objects to be added to the group
         :param description: str Description of the group being created
         """
 
@@ -164,10 +164,10 @@ class Fdm:
 
     def create_network_group(self, name, objects, description=None):
         """
-
-        :param name: str
-        :param objects: list
-        :param description: str
+        Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
+        :param name: str Name of the NetworkGroup
+        :param objects: [str] Names of the Network or NetworkGroup objects to be added to the group
+        :param description: str A description for the NetworkGroup
         """
         all_objects = self.get_net_objects()
         all_groups = self.get_object_groups()
@@ -359,7 +359,7 @@ class Fdm:
         """
         Creates a PortGroup object, containing at least 1 tcp/udp Port or an existing PortGroup
         :param name: str Name of the PortGroup
-        :param objects: list Names of the tcp/udp Port or PortGroup objects to be added to the group
+        :param objects: [str] Names of the tcp/udp Port or PortGroup objects to be added to the group
         :param description: str A description for the PortGroup
         """
         tcp_ports = self.get_tcp_ports()
