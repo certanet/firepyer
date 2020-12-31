@@ -10,6 +10,6 @@ The following version have been tested (others should work but YMMV):
 
 TBC
 
-`from fdm import Fdm`
+`from firepyer import Fdm`
 
-`firepower = Fdm('192.168.45.1', 'admin', 'Admin123')`
+`fdm = Fdm('192.168.45.1', 'admin', 'Admin123')`
