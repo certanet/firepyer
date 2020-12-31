@@ -1,14 +1,10 @@
 import json
-import csv
 from pprint import pprint
 from time import sleep
 from datetime import datetime
-from itertools import zip_longest
 
 import requests
 
-
-requests.packages.urllib3.disable_warnings()
 
 ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29mins in secs
 
@@ -20,6 +16,7 @@ class Fdm:
         self.password = password
         self.access_token = None
         self.access_token_expiry_time = None
+        requests.packages.urllib3.disable_warnings()
 
     def api_call(self, uri, method, data=None, get_auth=True, additional_headers=None):
         # Check for http allows passing in full URL e.g. from pagination next page link
@@ -98,11 +95,12 @@ class Fdm:
             self.access_token, self.access_token_expiry_time = self.get_access_token()
         return self.access_token
     
-    def get_class_by_name(self, get_class, obj_name, name_field_label='name') -> dict|None:
+    def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name') -> dict:
         """
         Get the dict for the Class with the given name
-        :param obj_name:  str The name of the object to find
-        :param name_field_label:  str The field to use as the 'name' to match on, defaults to name
+        :param get_class: dict The GET reponse from an FDM Model query
+        :param obj_name: str The name of the object to find
+        :param name_field_label: str The field to use as the 'name' to match on, defaults to name
         :return: dict if an object with the name is found, None if not
         """
         
@@ -112,7 +110,7 @@ class Fdm:
                     return obj
         return None
     
-    def get_paged_items(self, uri) -> list:
+    def get_paged_items(self, uri: str) -> list:
         response = self.get_api(uri).json()
         all_items = response['items']
         next_url = response['paging']['next']
@@ -127,10 +125,10 @@ class Fdm:
     def get_net_objects(self):
         return self.get_api('object/networks?limit=0').json()
     
-    def get_net_objects_filter(self, filter):
+    def get_net_objects_filter(self, filter: str):
         return self.get_api(f'object/networks?limit=0&filter={filter}').json()
     
-    def get_net_object_by_name(self, net_name):
+    def get_net_object_by_name(self, net_name: str):
         """
         Get the dict for a NetworkObject with the given name
         :param net_name: str The name of the NetworkObject to find
@@ -141,7 +139,7 @@ class Fdm:
     def get_object_groups(self):
         return self.get_api('object/networkgroups?limit=0').json()
 
-    def create_object(self, name, value, type='HOST', description=None):
+    def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
 
         host_object = {"name": name,
                        "description": description,
@@ -152,7 +150,7 @@ class Fdm:
                        }
         return self.post_api('object/networks', json.dumps(host_object))
 
-    def create_group(self, name, group_type, all_objects, object_names, description=None):
+    def create_group(self, name: str, group_type: str, all_objects: list, object_names: list, description: str = None):
         """
         Creates a group of pre-existing Network or Port objects
         :param name: str Name of the group being created
@@ -177,7 +175,7 @@ class Fdm:
 
         return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
 
-    def create_network_group(self, name, objects, description=None):
+    def create_network_group(self, name: str, objects: list, description: str = None):
         """
         Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
         :param name: str Name of the NetworkGroup
@@ -205,7 +203,7 @@ class Fdm:
                 changes_found = True
         return changes_found
 
-    def post_deployment(self) -> str|None:
+    def post_deployment(self) -> str:
         """
         Send a deployment POST request
         :return: unique id for the deployment task
@@ -220,7 +218,7 @@ class Fdm:
             print(deploy_id)
         return deploy_id
 
-    def get_deployment_status(self, deploy_id: str) -> str|None:
+    def get_deployment_status(self, deploy_id: str) -> str:
         """
         Wait for a deployment to complete
         :param deploy_id: unique identifier for deployment task
@@ -278,7 +276,7 @@ class Fdm:
     def get_vrfs(self):
         return self.get_api('devices/default/routing/virtualrouters').json()
     
-    def get_vrf_by_name(self, vrf_name):
+    def get_vrf_by_name(self, vrf_name: str):
         """
         Get the dict for a VRF with the given name
         :param vrf_name: str The name of the VRF to find
@@ -335,7 +333,7 @@ class Fdm:
         return self.put_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
                             data=json.dumps(dhcp_server))
     
-    def send_command(self, cmd):
+    def send_command(self, cmd: str):
         cmd_body = {"commandInput": cmd,
                     "type": "Command",}
         return self.post_api('action/command',
@@ -357,7 +355,7 @@ class Fdm:
     def get_udp_ports(self):
         return self.get_api('object/udpports?limit=0').json()
     
-    def create_port_object(self, name, port, type, description=None):
+    def create_port_object(self, name: str, port: str, type: str, description: str = None):
         """
         Creates a Port object
         :param name: str The name of the Port object
@@ -372,7 +370,7 @@ class Fdm:
                        }
         return self.post_api(f'object/{type}ports', json.dumps(port_object))
        
-    def create_port_group(self, name, objects, description=None):
+    def create_port_group(self, name: str, objects: list, description: str = None):
         """
         Creates a PortGroup object, containing at least 1 tcp/udp Port or an existing PortGroup
         :param name: str Name of the PortGroup
@@ -385,51 +383,3 @@ class Fdm:
         all_ports = tcp_ports['items'] + udp_ports['items'] + port_groups['items']
         
         return self.create_group(name, 'port', all_ports, objects, description)
-
-
-def read_objects_csv(filename):
-    objs = []
-    with open(filename) as objects_csv:
-        objects_dict = csv.DictReader(objects_csv)
-        for obj in objects_dict:
-            objs.append(obj)
-    return objs
-
-
-def read_objectgroups_csv(filename):
-    # CSV file must be in hierarchical order, so groups of groups can be created
-    groups = []
-    with open(filename) as objects_csv:
-        objects_dict = csv.DictReader(objects_csv)
-        for obj in objects_dict:
-
-            group_exists = False
-            for group in groups:
-                if group['name'] == obj['name']:
-                    group['objects'].append(obj['objects'])
-                    group_exists = True
-                else:
-                    continue
-            
-            if not group_exists:
-                group = {'name': obj['name'],
-                         'objects': [obj['objects']],
-                         'description': obj['description']}
-                groups.append(group)
-
-    return groups
-
-
-def expand_merged_csv(filename):
-    with open(filename) as input_file:
-        input_file = csv.reader(input_file)
-
-        with open(f'output-{filename}', 'w', newline='') as output_file:
-            output_file = csv.writer(output_file)
-
-            previous_row = []
-            for row in input_file:
-                if any(row):
-                    row = [a or b for a,b in zip_longest(row, previous_row, fillvalue='')]
-                previous_row = row
-                output_file.writerow(row)
