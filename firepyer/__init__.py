@@ -399,3 +399,17 @@ class Fdm:
 
         return self.post_api('/devices/default/action/provision',
                              data=json.dumps(provision))
+
+    def get_hostname(self):
+        return self.get_api('devicesettings/default/devicehostnames').json()
+    
+    def set_hostname(self, hostname):
+        current_hostname = self.get_hostname()['items'][0]
+        hostname_id = current_hostname['id']
+        new_hostname = {"hostname": hostname,
+                        "id": hostname_id,
+                        "version": current_hostname['version'],
+                        "type": "devicehostname"}
+
+        return self.put_api(f'devicesettings/default/devicehostnames/{hostname_id}',
+                             data=json.dumps(new_hostname))
