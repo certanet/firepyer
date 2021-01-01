@@ -38,6 +38,7 @@ class Fdm:
             if response.status_code == 200:
                 return response
             else:
+                pprint(response.status_code)
                 pprint(uri)
                 pprint(data)
                 pprint(response.json())
@@ -383,3 +384,18 @@ class Fdm:
         all_ports = tcp_ports['items'] + udp_ports['items'] + port_groups['items']
         
         return self.create_group(name, 'port', all_ports, objects, description)
+    
+    def get_initial_provision(self):
+        return self.get_api('/devices/default/action/provision').json()
+    
+    def set_initial_provision(self, new_password, current_password='Admin123'):
+        get_provis = self.get_initial_provision()
+        provision = get_provis['items'][0]
+        provision["acceptEULA"] = True
+        provision["currentPassword"] = current_password
+        provision["newPassword"] = new_password
+        provision.pop('links')
+        provision.pop('version')
+
+        return self.post_api('/devices/default/action/provision',
+                             data=json.dumps(provision))
