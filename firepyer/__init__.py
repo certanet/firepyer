@@ -18,22 +18,24 @@ class Fdm:
         self.access_token_expiry_time = None
         requests.packages.urllib3.disable_warnings()
 
-    def api_call(self, uri, method, data=None, get_auth=True, additional_headers=None):
+    def api_call(self, uri, method, data=None, get_auth=True, files=None):
         # Check for http allows passing in full URL e.g. from pagination next page link
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
         
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}        
+        headers = {"Accept": "application/json"}        
         if get_auth:
             headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
-        if additional_headers:
-            headers = {**headers, **additional_headers}
+        if not files:
+            # When sending files, requests will auto populate CT as multipart/form-data
+            headers['Content-Type'] = "application/json"
         
         try:
             response = requests.request(method, uri,
                                         data=data,
                                         headers=headers,
-                                        verify=False)
+                                        verify=False,
+                                        files=files)
             pprint(response)
             if response.status_code == 200:
                 return response
@@ -41,13 +43,15 @@ class Fdm:
                 pprint(response.status_code)
                 pprint(uri)
                 pprint(data)
+                pprint(response.text
+                pprint(response.request.headers)
                 pprint(response.json())
         except Exception as e:
             print(f"Unable to {method} request: {str(e)}")
             return None
         
-    def post_api(self, uri, data=None, get_auth=True):
-        return self.api_call(uri, 'POST', data=data, get_auth=get_auth)
+    def post_api(self, uri, data=None, get_auth=True, files=None):
+        return self.api_call(uri, 'POST', data=data, get_auth=get_auth, files=files)
     
     def put_api(self, uri, data=None):
         return self.api_call(uri, 'PUT', data=data)
@@ -413,3 +417,19 @@ class Fdm:
 
         return self.put_api(f'devicesettings/default/devicehostnames/{hostname_id}',
                              data=json.dumps(new_hostname))
+
+    def get_upgrade_files(self):
+        return self.get_api('managedentity/upgradefiles').json()
+    
+    def get_upgrade_file(self, file_id):
+        return self.get_api(f'managedentity/upgradefiles/{file_id}').json()
+
+    def upload_upgrade(self, filename):
+        # API parameter is called fileToUpload
+        files = {'fileToUpload': open(filename, 'rb')}
+        
+        return self.post_api('action/uploadupgrade',
+                             files=files)
+
+    def perform_upgrade(self):
+        return self.post_api('action/upgrade')
