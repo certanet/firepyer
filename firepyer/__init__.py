@@ -180,11 +180,11 @@ class Fdm:
         
         net = self.get_net_objects_filter(f'name:{name}')
         if net:
-            return net[0]
+            return net
         else:
             net = self.get_net_group_filter(f'name:{name}')
             if net:
-                return net[0]
+                return net
         return None
 
     def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
@@ -390,8 +390,11 @@ class Fdm:
         return self.post_api('action/command',
                              data=json.dumps(cmd_body)).json()
     
-    def get_port_groups(self):
-        return self.get_api('object/portgroups').json()
+    def get_port_groups(self, filter=''):
+        if filter:
+            return self.get_obj_by_filter('object/portgroups', filter)            
+        else:
+            return self.get_api('object/portgroups').json()
     
     def get_tcp_ports(self):
         return self.get_api('object/tcpports?limit=0').json()
@@ -476,8 +479,8 @@ class Fdm:
     def get_system_info(self) -> dict:
         return self.get_api('/operational/systeminfo/default').json()
 
-    def get_security_zone(self, filter: str):
-        return self.get_obj_by_filter('object/securityzone', filter)
+    def get_security_zone_filter(self, filter: str):
+        return self.get_obj_by_filter('object/securityzones', filter)
 
     def create_security_zone(self, name, description='', interfaces=[], phy_interfaces=[], mode='ROUTED'):
         """
@@ -514,6 +517,12 @@ class Fdm:
         policy_id = self.get_acp()[0]['id']
         return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
 
+    def add_rule_item(self, item_name, item_obj, item_list):
+        if item_obj:
+            item_list.append(item_obj[0])
+        else:
+            print(f'{item_name} does not exist!')
+    
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
                            dst_zones=[], dst_networks=[], dst_ports=[], log=''):
         """
@@ -532,19 +541,21 @@ class Fdm:
         rule_dst_networks = []
         rule_dst_ports = []
 
+        for zone in src_zones:
+            z = self.get_security_zone_filter(f'name:{zone}')
+            self.add_rule_item(zone, z, rule_src_zones)
+
         for network in src_networks:
             net = self.get_net_obj_or_grp(network)
-            if net:
-                rule_src_networks.append(net)
-            else:
-                print(network, 'does not exist!')
+            self.add_rule_item(network, net, rule_src_networks)
+
+        for zone in dst_zones:
+            z = self.get_security_zone_filter(f'name:{zone}')
+            self.add_rule_item(zone, z, rule_dst_zones)
 
         for network in dst_networks:
             net = self.get_net_obj_or_grp(network)
-            if net:
-                rule_dst_networks.append(net)
-            else:
-                print(network, 'does not exist!')
+            self.add_rule_item(network, net, rule_dst_networks)
 
         if log.upper() == 'BOTH':
             log = 'LOG_BOTH'
@@ -555,8 +566,8 @@ class Fdm:
         
 
         rule = {"name": name,
-                "sourceZones": [],
-                "destinationZones": [],
+                "sourceZones": rule_src_zones,
+                "destinationZones": rule_dst_zones,
                 "sourceNetworks": rule_src_networks,
                 "destinationNetworks": rule_dst_networks,
                 "sourcePorts": [],
