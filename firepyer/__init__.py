@@ -121,6 +121,19 @@ class Fdm:
             self.access_token, self.access_token_expiry_time = self.get_access_token()
         return self.access_token
     
+    def _get_object_subset(self, obj:dict) -> dict:
+        """
+        Gets the significant fields from a full object
+        :param obj: dict An object retrieved from any endpoint
+        :return: dict A subet of the uniquely identifiable fields from the object
+        """
+        object_subset = {}
+        object_subset['id'] = obj['id']
+        object_subset['type'] = obj['type']
+        object_subset['version'] = obj['version']
+        object_subset['name'] = obj['name']
+        return object_subset
+    
     def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name') -> dict:
         """
         Get the dict for the Class with the given name
@@ -351,12 +364,12 @@ class Fdm:
         return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
                              json.dumps(bgp_settings_json))
 
-    def get_interfaces(self):
-        return self.get_api('/devices/default/interfaces').json()
-    
-    def get_interface_filter(self, filter: str):
-        return self.get_obj_by_filter('devices/default/interfaces', filter)
-    
+    def get_interfaces(self, name=''):
+        if name:
+            return self.get_obj_by_name('devices/default/interfaces', name)
+        else:
+            return self.get_api('devices/default/interfaces').json()
+
     def get_interface_by_phy(self, phy_name: str):
         """
         Get the dict for a NetworkObject with the given name
@@ -531,7 +544,7 @@ class Fdm:
             zone_interfaces.append(intf_obj)
         
         for intf in interfaces:
-            intf_obj = self.get_interface_filter(f'name:{intf}')
+            intf_obj = self.get_interfaces(name=intf)
             zone_interfaces.append(intf_obj[0])
 
         zone_object = {"name": name,
@@ -608,11 +621,7 @@ class Fdm:
             ip = self.get_intrusion_policies(int_policy)
             if ip:
                 # Can't just pass the whole IntrusionPolicy object through like most others, so just pass the req'd fields
-                rule_int_policy = {}
-                rule_int_policy['id'] = ip[0]['id']
-                rule_int_policy['type'] = ip[0]['type']
-                rule_int_policy['version'] = ip[0]['version']
-                rule_int_policy['name'] = ip[0]['name']
+                rule_int_policy = self._get_object_subset(ip[0])
 
         if log.upper() == 'BOTH':
             log = 'LOG_BOTH'
@@ -669,3 +678,32 @@ class Fdm:
             return self.get_obj_by_name('policy/intrusionpolicies', name)
         else:
             return self.get_api('policy/`intrusionpolicies').json()['items']
+    
+    def get_syslog_servers(self):
+        return self.get_api('object/syslogalerts').json()['items']
+
+    def set_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
+        """
+        Creates a syslog server to be able to send logs to
+        :param ip: str The syslog server IP
+        :param protocol: str The protocol used to send syslog messages, must be one of ['TCP', 'UDP']
+        :param port: str The port number used to send syslog messages
+        :param interface: str Optionally specify a data interface name to use as the source when sending syslog messages, otherwise mgmt will be used
+        :return: dict The new SyslogServer object, or the error message from the JSON response
+        """
+        use_mgmt = True
+        interface_obj = None
+
+        if interface:
+            use_mgmt = False
+            interface_object = self.get_interfaces(name=interface)[0]            
+
+        syslog_object = {"deviceInterface": interface_object,
+                        "useManagementInterface": use_mgmt,
+                        "protocol": protocol.upper(),
+                        "host": ip,
+                        "port": port,
+                        "type": "syslogserver"
+                        }
+        return self.post_api('object/syslogalerts',
+                             data=json.dumps(syslog_object)).json()
