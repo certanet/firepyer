@@ -1,9 +1,11 @@
 import json
+from json.decoder import JSONDecodeError
 from pprint import pprint
 from time import sleep
 from datetime import datetime
 
 import requests
+from requests import api
 
 
 ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29mins in secs
@@ -23,7 +25,7 @@ class Fdm:
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
         
-        headers = {"Accept": "application/json"}        
+        headers = {"Accept": "application/json", 'User-Agent': 'firepyer/0.0.1'}
         if get_auth:
             headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
         if not files:
@@ -37,15 +39,17 @@ class Fdm:
                                         verify=False,
                                         files=files)
             pprint(response)
-            if response.status_code == 200:
-                return response
-            else:
+            if response.status_code != 200:
                 pprint(response.status_code)
                 pprint(uri)
                 pprint(data)
-                pprint(response.text
+                pprint(response.text)
                 pprint(response.request.headers)
-                pprint(response.json())
+                try:
+                    pprint(response.json())
+                except JSONDecodeError:
+                    pass
+            return response
         except Exception as e:
             print(f"Unable to {method} request: {str(e)}")
             return None
@@ -58,6 +62,23 @@ class Fdm:
         
     def get_api(self, uri, data=None):
         return self.api_call(uri, 'GET', data=data)
+    
+    def check_api_status(self):
+        api_alive = False
+        
+        while not api_alive:
+            api_status = self.api_call('#/login', 'GET', get_auth=False)
+            if api_status != None:
+                if api_status.status_code == 401:
+                    print('API Alive!')
+                    api_alive = True
+                elif api_status.status_code == 503:
+                    print('API service unavailable...')
+            else:
+                print('Unable to reach API')
+                # Exception when device is rebooted/unreachable:
+                # HTTPSConnectionPool
+            sleep(10)
     
     def get_access_token(self) -> str:
         """
