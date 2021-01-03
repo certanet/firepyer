@@ -390,13 +390,6 @@ class Fdm:
         return self.post_api('action/command',
                              data=json.dumps(cmd_body)).json()
     
-    def get_acp(self):
-        return self.get_api('policy/accesspolicies').json()
-    
-    def get_access_rules(self):
-        policy_id = self.get_acp()['items'][0]['id']
-        return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
-    
     def get_port_groups(self):
         return self.get_api('object/portgroups').json()
     
@@ -513,3 +506,80 @@ class Fdm:
                        "type": "securityzone"
                        }
         return self.post_api('object/securityzones', json.dumps(zone_object))
+
+    def get_acp(self):
+        return self.get_api('policy/accesspolicies').json()['items']
+    
+    def get_access_rules(self):
+        policy_id = self.get_acp()[0]['id']
+        return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
+
+    def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
+                           dst_zones=[], dst_networks=[], dst_ports=[], log=''):
+        """
+        Create an access rule
+        :param : 
+        :param action: str ['PERMIT', 'TRUST', 'DENY'] 
+        :param log: str To log the connection at end of connection, start and end, or not at all
+        :return: 
+        """
+
+        rule_src_zones = []
+        rule_src_networks = []
+        rule_src_ports = []
+
+        rule_dst_zones = []
+        rule_dst_networks = []
+        rule_dst_ports = []
+
+        for network in src_networks:
+            net = self.get_net_obj_or_grp(network)
+            if net:
+                rule_src_networks.append(net)
+            else:
+                print(network, 'does not exist!')
+
+        for network in dst_networks:
+            net = self.get_net_obj_or_grp(network)
+            if net:
+                rule_dst_networks.append(net)
+            else:
+                print(network, 'does not exist!')
+
+        if log.upper() == 'BOTH':
+            log = 'LOG_BOTH'
+        elif log.upper() == 'END':
+            log = 'LOG_FLOW_END'
+        else:
+            log = 'LOG_NONE'
+        
+
+        rule = {"name": name,
+                "sourceZones": [],
+                "destinationZones": [],
+                "sourceNetworks": rule_src_networks,
+                "destinationNetworks": rule_dst_networks,
+                "sourcePorts": [],
+                "destinationPorts": [],
+                "ruleAction": action.upper(),
+                "eventLogAction": log,
+                # "intrusionPolicy": {
+                #     "id": "string",
+                #     "type": "string",
+                #     "version": "string",
+                #     "name": "string"
+                #     },
+                # "syslogServer": {
+                #     "id": "string",
+                #     "type": "string",
+                #     "version": "string",
+                #     "name": "string"
+                #     },
+                "type": "accessrule"
+                }
+
+        pprint(rule)
+
+        policy_id = self.get_acp()[0]['id']
+        return self.post_api(f'policy/accesspolicies/{policy_id}/accessrules',
+                             data=json.dumps(rule))
