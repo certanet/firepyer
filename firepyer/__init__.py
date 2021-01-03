@@ -634,3 +634,20 @@ class Fdm:
         policy_id = self.get_acp()[0]['id']
         return self.post_api(f'policy/accesspolicies/{policy_id}/accessrules',
                              data=json.dumps(rule))
+
+    def get_smartlicense(self):
+        return self.get_api('license/smartlicenses').json()['items']
+
+    def set_smartlicense(self, license_type):
+        """
+        Activates a SmartLicense of the given type
+        :param license_type: str The type of license to apply, must be one of ['BASE', 'MALWARE', 'THREAT', 'URLFILTERING', 'APEX', 'PLUS', 'VPNOnly']
+        :return: dict The new license object, or the error message from the JSON response
+        """
+        license_object = {"count": 1,
+                          "compliant": True,
+                          "licenseType": license_type,
+                          "type": "license"
+                          }
+        return self.post_api('license/smartlicenses',
+                             data=json.dumps(license_object)).json()
