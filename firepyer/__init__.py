@@ -396,12 +396,38 @@ class Fdm:
         else:
             return self.get_api('object/portgroups').json()
     
-    def get_tcp_ports(self):
-        return self.get_api('object/tcpports?limit=0').json()
+    def get_tcp_ports(self, filter=''):
+        if filter:
+            return self.get_obj_by_filter('object/tcpports', filter)
+        else:
+            return self.get_api('object/tcpports?limit=0').json()
     
-    def get_udp_ports(self):
-        return self.get_api('object/udpports?limit=0').json()
-    
+    def get_udp_ports(self, filter=''):
+        if filter:
+            return self.get_obj_by_filter('object/udpports', filter)
+        else:
+            return self.get_api('object/udpports?limit=0').json()
+
+    def get_port_obj_or_grp(self, name) -> dict:
+        """
+        Get a Port (tcp/udp) object or PortGroup by the given name
+        :param name: str The name of the object/group to find
+        :return: dict The object of the resource if found
+        """
+
+        port = self.get_tcp_ports(filter=f'name:{name}')
+        if port:
+            return port
+        else:
+            port = self.get_udp_ports(filter=f'name:{name}')
+            if port:
+                return port
+            else:
+                port = self.get_port_groups(filter=f'name:{name}')
+                if port:
+                    return port
+        return None
+
     def create_port_object(self, name: str, port: str, type: str, description: str = None):
         """
         Creates a Port object
@@ -527,9 +553,15 @@ class Fdm:
                            dst_zones=[], dst_networks=[], dst_ports=[], log=''):
         """
         Create an access rule
-        :param : 
-        :param action: str ['PERMIT', 'TRUST', 'DENY'] 
-        :param log: str To log the connection at end of connection, start and end, or not at all
+        :param name: str Name of the AccessRule
+        :param action: str The action the rule should take, should be one of ['PERMIT', 'TRUST', 'DENY']
+        :param src_zones: [str] An optional list of names of source Security Zones
+        :param src_networks: [str] An optional list of names of source networks, names can be of either NetworkObject or NetworkGroup
+        :param src_ports: [str] An optional list of names of source ports, names can be of either tcp/udp PortObject or PortGroup
+        :param dst_zones: [str] An optional list of destination Security Zones
+        :param dst_networks: [str] An optional list of names of destination networks, names can be of either NetworkObject or NetworkGroup
+        :param dst_ports: [str] An optional list of names of destination ports, names can be of either tcp/udp PortObject or PortGroup
+        :param log: str Optionally log the rule at start and end of connection, end of connection, or not at all, should be one of ['BOTH', 'END']
         :return: 
         """
 
@@ -549,6 +581,10 @@ class Fdm:
             net = self.get_net_obj_or_grp(network)
             self.add_rule_item(network, net, rule_src_networks)
 
+        for port in src_ports:
+            p = self.get_port_obj_or_grp(port)
+            self.add_rule_item(port, p, rule_src_ports)
+
         for zone in dst_zones:
             z = self.get_security_zone_filter(f'name:{zone}')
             self.add_rule_item(zone, z, rule_dst_zones)
@@ -556,6 +592,10 @@ class Fdm:
         for network in dst_networks:
             net = self.get_net_obj_or_grp(network)
             self.add_rule_item(network, net, rule_dst_networks)
+
+        for port in dst_ports:
+            p = self.get_port_obj_or_grp(port)
+            self.add_rule_item(port, p, rule_dst_ports)
 
         if log.upper() == 'BOTH':
             log = 'LOG_BOTH'
@@ -570,8 +610,8 @@ class Fdm:
                 "destinationZones": rule_dst_zones,
                 "sourceNetworks": rule_src_networks,
                 "destinationNetworks": rule_dst_networks,
-                "sourcePorts": [],
-                "destinationPorts": [],
+                "sourcePorts": rule_src_ports,
+                "destinationPorts": rule_dst_ports,
                 "ruleAction": action.upper(),
                 "eventLogAction": log,
                 # "intrusionPolicy": {
