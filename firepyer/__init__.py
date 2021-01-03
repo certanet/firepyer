@@ -151,6 +151,9 @@ class Fdm:
     def get_obj_by_filter(self, url, filter):
         return self.get_api(f'{url}?filter={filter}').json()['items']
 
+    def get_obj_by_name(self, url, name):
+        return self.get_obj_by_filter(url, filter=f'name:{name}')
+
     def get_net_objects(self):
         return self.get_api('object/networks?limit=0').json()
     
@@ -165,8 +168,11 @@ class Fdm:
         """
         return self.get_class_by_name(self.get_net_objects(), net_name)
     
-    def get_net_groups(self):
-        return self.get_api('object/networkgroups?limit=0').json()
+    def get_net_groups(self, name):
+        if name:
+            return self.get_obj_by_name('object/networkgroups', name)
+        else:
+            return self.get_api('object/networkgroups?limit=0').json()
 
     def get_net_group_filter(self, filter: str):
         return self.get_obj_by_filter('object/networkgroups', filter)
@@ -392,7 +398,7 @@ class Fdm:
     
     def get_port_groups(self, filter=''):
         if filter:
-            return self.get_obj_by_filter('object/portgroups', filter)            
+            return self.get_obj_by_filter('object/portgroups', filter)
         else:
             return self.get_api('object/portgroups').json()
     
@@ -550,7 +556,7 @@ class Fdm:
             print(f'{item_name} does not exist!')
     
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
-                           dst_zones=[], dst_networks=[], dst_ports=[], log=''):
+                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', log=''):
         """
         Create an access rule
         :param name: str Name of the AccessRule
@@ -561,6 +567,7 @@ class Fdm:
         :param dst_zones: [str] An optional list of destination Security Zones
         :param dst_networks: [str] An optional list of names of destination networks, names can be of either NetworkObject or NetworkGroup
         :param dst_ports: [str] An optional list of names of destination ports, names can be of either tcp/udp PortObject or PortGroup
+        :param int_policy: str Optionally provide a name of the IntrusionPolicy to apply to the rule
         :param log: str Optionally log the rule at start and end of connection, end of connection, or not at all, should be one of ['BOTH', 'END']
         :return: 
         """
@@ -568,10 +575,10 @@ class Fdm:
         rule_src_zones = []
         rule_src_networks = []
         rule_src_ports = []
-
         rule_dst_zones = []
         rule_dst_networks = []
         rule_dst_ports = []
+        rule_int_policy = None
 
         for zone in src_zones:
             z = self.get_security_zone_filter(f'name:{zone}')
@@ -596,6 +603,16 @@ class Fdm:
         for port in dst_ports:
             p = self.get_port_obj_or_grp(port)
             self.add_rule_item(port, p, rule_dst_ports)
+        
+        if int_policy:
+            ip = self.get_intrusion_policies(int_policy)
+            if ip:
+                # Can't just pass the whole IntrusionPolicy object through like most others, so just pass the req'd fields
+                rule_int_policy = {}
+                rule_int_policy['id'] = ip[0]['id']
+                rule_int_policy['type'] = ip[0]['type']
+                rule_int_policy['version'] = ip[0]['version']
+                rule_int_policy['name'] = ip[0]['name']
 
         if log.upper() == 'BOTH':
             log = 'LOG_BOTH'
@@ -614,12 +631,7 @@ class Fdm:
                 "destinationPorts": rule_dst_ports,
                 "ruleAction": action.upper(),
                 "eventLogAction": log,
-                # "intrusionPolicy": {
-                #     "id": "string",
-                #     "type": "string",
-                #     "version": "string",
-                #     "name": "string"
-                #     },
+                "intrusionPolicy": rule_int_policy,
                 # "syslogServer": {
                 #     "id": "string",
                 #     "type": "string",
@@ -651,3 +663,9 @@ class Fdm:
                           }
         return self.post_api('license/smartlicenses',
                              data=json.dumps(license_object)).json()
+
+    def get_intrusion_policies(self, name=''):
+        if name:
+            return self.get_obj_by_name('policy/intrusionpolicies', name)
+        else:
+            return self.get_api('policy/`intrusionpolicies').json()['items']
