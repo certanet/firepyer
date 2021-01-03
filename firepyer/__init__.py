@@ -148,11 +148,14 @@ class Fdm:
 
         return all_items
 
+    def get_obj_by_filter(self, url, filter):
+        return self.get_api(f'{url}?filter={filter}').json()['items']
+
     def get_net_objects(self):
         return self.get_api('object/networks?limit=0').json()
     
     def get_net_objects_filter(self, filter: str):
-        return self.get_api(f'object/networks?limit=0&filter={filter}').json()
+        return self.get_obj_by_filter('object/networks', filter)
     
     def get_net_object_by_name(self, net_name: str):
         """
@@ -162,8 +165,27 @@ class Fdm:
         """
         return self.get_class_by_name(self.get_net_objects(), net_name)
     
-    def get_object_groups(self):
+    def get_net_groups(self):
         return self.get_api('object/networkgroups?limit=0').json()
+
+    def get_net_group_filter(self, filter: str):
+        return self.get_obj_by_filter('object/networkgroups', filter)
+    
+    def get_net_obj_or_grp(self, name) -> dict:
+        """
+        Get a network object or network group by the given name
+        :param name: str The name of the object/group to find
+        :return: dict The object of the resource if found 
+        """
+        
+        net = self.get_net_objects_filter(f'name:{name}')
+        if net:
+            return net[0]
+        else:
+            net = self.get_net_group_filter(f'name:{name}')
+            if net:
+                return net[0]
+        return None
 
     def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
 
@@ -209,7 +231,7 @@ class Fdm:
         :param description: str A description for the NetworkGroup
         """
         all_objects = self.get_net_objects()
-        all_groups = self.get_object_groups()
+        all_groups = self.get_net_groups()
         all_nets = all_objects['items'] + all_groups['items']
         
         return self.create_group(name, 'network', all_nets, objects, description)
@@ -262,27 +284,6 @@ class Fdm:
 
         return state
     
-    def get_bgp_general_settings(self):
-        return self.get_api('devices/default/routing/bgpgeneralsettings').json()
-    
-    def set_bgp_general_settings(self):
-        bgp_settings = {"name": "BgpGeneralSettings",
-                        "asNumber": "65500",
-                        # "routerId": "string",
-                        # "scanTime": 0,
-                        # "aggregateTimer": 0,
-                        # "bgpNextHopTriggerDelay": 0,
-                        # "bgpNextHopTriggerEnable": true,
-                        # "maxasLimit": 0,
-                        # "logNeighborChanges": true,
-                        # "transportPathMtuDiscovery": true,
-                        # "fastExternalFallOver": true,
-                        # "enforceFirstAs": true,
-                        # "asnotationDot": true,
-                        "type": "bgpgeneralsettings"
-                        }
-        return self.post_api('devices/default/routing/bgpgeneralsettings', data=json.dumps(bgp_settings))
-    
     def deploy_policy(self):
         if self.get_pending_changes():
             deployment_id = self.post_deployment()
@@ -310,6 +311,27 @@ class Fdm:
         """
         return self.get_class_by_name(self.get_vrfs(), vrf_name)
 
+    def get_bgp_general_settings(self):
+        return self.get_api('devices/default/routing/bgpgeneralsettings').json()
+    
+    def set_bgp_general_settings(self):
+        bgp_settings = {"name": "BgpGeneralSettings",
+                        "asNumber": "65500",
+                        # "routerId": "string",
+                        # "scanTime": 0,
+                        # "aggregateTimer": 0,
+                        # "bgpNextHopTriggerDelay": 0,
+                        # "bgpNextHopTriggerEnable": true,
+                        # "maxasLimit": 0,
+                        # "logNeighborChanges": true,
+                        # "transportPathMtuDiscovery": true,
+                        # "fastExternalFallOver": true,
+                        # "enforceFirstAs": true,
+                        # "asnotationDot": true,
+                        "type": "bgpgeneralsettings"
+                        }
+        return self.post_api('devices/default/routing/bgpgeneralsettings', data=json.dumps(bgp_settings))
+    
     def get_bgp_settings(self):
         vrf_id = self.get_vrf_by_name('Global')['id']
         bgp_settings = self.get_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp')
