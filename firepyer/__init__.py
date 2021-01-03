@@ -137,14 +137,14 @@ class Fdm:
     def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name') -> dict:
         """
         Get the dict for the Class with the given name
-        :param get_class: dict The GET reponse from an FDM Model query
+        :param get_class: dict The 'items' in a GET reponse from an FDM Model query
         :param obj_name: str The name of the object to find
         :param name_field_label: str The field to use as the 'name' to match on, defaults to name
         :return: dict if an object with the name is found, None if not
         """
         
         if get_class is not None:
-            for obj in get_class['items']:
+            for obj in get_class:
                 if obj[name_field_label] == obj_name:
                     return obj
         return None
@@ -320,7 +320,7 @@ class Fdm:
             print('No pending changes!')
     
     def get_vrfs(self):
-        return self.get_api('devices/default/routing/virtualrouters').json()
+        return self.get_api('devices/default/routing/virtualrouters').json()['items']
     
     def get_vrf_by_name(self, vrf_name: str):
         """
@@ -368,7 +368,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('devices/default/interfaces', name)
         else:
-            return self.get_api('devices/default/interfaces').json()
+            return self.get_api('devices/default/interfaces').json()['items']
 
     def get_interface_by_phy(self, phy_name: str):
         """
@@ -569,7 +569,7 @@ class Fdm:
             print(f'{item_name} does not exist!')
     
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
-                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', log=''):
+                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
         """
         Create an access rule
         :param name: str Name of the AccessRule
@@ -581,6 +581,7 @@ class Fdm:
         :param dst_networks: [str] An optional list of names of destination networks, names can be of either NetworkObject or NetworkGroup
         :param dst_ports: [str] An optional list of names of destination ports, names can be of either tcp/udp PortObject or PortGroup
         :param int_policy: str Optionally provide a name of the IntrusionPolicy to apply to the rule
+        :param syslog: str Optionally provide the name of a SyslogServer to log the rule to, in the format of IP:PORT
         :param log: str Optionally log the rule at start and end of connection, end of connection, or not at all, should be one of ['BOTH', 'END']
         :return: 
         """
@@ -592,6 +593,7 @@ class Fdm:
         rule_dst_networks = []
         rule_dst_ports = []
         rule_int_policy = None
+        rule_syslog = None
 
         for zone in src_zones:
             z = self.get_security_zone_filter(f'name:{zone}')
@@ -623,13 +625,17 @@ class Fdm:
                 # Can't just pass the whole IntrusionPolicy object through like most others, so just pass the req'd fields
                 rule_int_policy = self._get_object_subset(ip[0])
 
+        if syslog:
+            syslog_server = self.get_syslog_servers(syslog)
+            if syslog_server:
+                rule_syslog = syslog_server
+
         if log.upper() == 'BOTH':
             log = 'LOG_BOTH'
         elif log.upper() == 'END':
             log = 'LOG_FLOW_END'
         else:
             log = 'LOG_NONE'
-        
 
         rule = {"name": name,
                 "sourceZones": rule_src_zones,
@@ -641,12 +647,7 @@ class Fdm:
                 "ruleAction": action.upper(),
                 "eventLogAction": log,
                 "intrusionPolicy": rule_int_policy,
-                # "syslogServer": {
-                #     "id": "string",
-                #     "type": "string",
-                #     "version": "string",
-                #     "name": "string"
-                #     },
+                "syslogServer": rule_syslog,
                 "type": "accessrule"
                 }
 
@@ -679,8 +680,12 @@ class Fdm:
         else:
             return self.get_api('policy/`intrusionpolicies').json()['items']
     
-    def get_syslog_servers(self):
-        return self.get_api('object/syslogalerts').json()['items']
+    def get_syslog_servers(self, name=''):
+        if name:
+            # Syslog server names are stored as IP:PORT, so unable to query using URL filter
+            return self.get_class_by_name(self.get_syslog_servers(), name)
+        else:
+            return self.get_api('object/syslogalerts?limit=0').json()['items']
 
     def set_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
         """
