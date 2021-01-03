@@ -454,3 +454,6 @@ class Fdm:
 
     def perform_upgrade(self):
         return self.post_api('action/upgrade')
+
+    def get_system_info(self) -> dict:
+        return self.get_api('/operational/systeminfo/default').json()
