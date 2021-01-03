@@ -348,6 +348,9 @@ class Fdm:
     def get_interfaces(self):
         return self.get_api('/devices/default/interfaces').json()
     
+    def get_interface_filter(self, filter: str):
+        return self.get_obj_by_filter('devices/default/interfaces', filter)
+    
     def get_interface_by_phy(self, phy_name: str):
         """
         Get the dict for a NetworkObject with the given name
@@ -479,3 +482,34 @@ class Fdm:
 
     def get_system_info(self) -> dict:
         return self.get_api('/operational/systeminfo/default').json()
+
+    def get_security_zone(self, filter: str):
+        return self.get_obj_by_filter('object/securityzone', filter)
+
+    def create_security_zone(self, name, description='', interfaces=[], phy_interfaces=[], mode='ROUTED'):
+        """
+        Creates a security zone
+        :param name: str The name of the Security Zone
+        :param description: str Description
+        :param interfaces: list The logical names of any Interfaces to be part of this Security Zone e.g. inside
+        :param phy_interfaces: list The physical names of any Interfaces to be part of this Security Zone e.g. GigabitEthernet0/0
+        :param mode: str The mode of the Security Zone, either ROUTED or PASSIVE
+        """
+
+        zone_interfaces = []
+
+        for intf in phy_interfaces:
+            intf_obj = self.get_interface_by_phy(intf)
+            zone_interfaces.append(intf_obj)
+        
+        for intf in interfaces:
+            intf_obj = self.get_interface_filter(f'name:{intf}')
+            zone_interfaces.append(intf_obj[0])
+
+        zone_object = {"name": name,
+                       "description": description,
+                       "interfaces": zone_interfaces,
+                       "mode": mode.upper(),
+                       "type": "securityzone"
+                       }
+        return self.post_api('object/securityzones', json.dumps(zone_object))
