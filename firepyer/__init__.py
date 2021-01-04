@@ -168,9 +168,13 @@ class Fdm:
         return self.get_api(f'{url}{first_param}filter={filter}').json()['items']
 
     def get_obj_by_name(self, url, name):
-        return self.get_obj_by_filter(url, filter=f'name:{name}')
+        obj = self.get_obj_by_filter(url, filter=f'name:{name}')
+        if obj:
+            return obj[0]
+        else:
+            return None
 
-    def get_net_objects(self, name='') -> list:
+    def get_net_objects(self, name=''):
         if name:
             return self.get_obj_by_name('object/networks?limit=0&', name)
         else:
@@ -194,9 +198,8 @@ class Fdm:
         """
         Get a network object or network group by the given name
         :param name: str The name of the object/group to find
-        :return: dict The object of the resource if found 
+        :return: dict Contains a single dict for the object of the resource, if found
         """
-        
         net = self.get_net_objects(name=name)
         if net:
             return net
@@ -217,23 +220,14 @@ class Fdm:
                        }
         return self.post_api('object/networks', json.dumps(host_object))
 
-    def create_group(self, name: str, group_type: str, all_objects: list, object_names: list, description: str = None):
+    def create_group(self, name: str, group_type: str, objects_for_group: list, description: str = None):
         """
         Creates a group of pre-existing Network or Port objects
         :param name: str Name of the group being created
-        :param group_type: str Should be either network or port depending on group class
-        :param all_objects: [Obj] All API-gathered Objects that exist for the type of group class being created
-        :param object_names: [str] Names of objects to be added to the group
+        :param group_type: str Should be either 'network' or 'port' depending on group class
+        :param objects_for_group: [Obj] All API-gathered Objects to be added to the group
         :param description: str Description of the group being created
         """
-
-        objects_for_group = []
-
-        for obj_name in object_names:
-            for obj in all_objects:
-                if obj['name'] == obj_name:
-                    objects_for_group.append(obj)
-        
         object_group = {"name": name,
                         "description": description,
                         "objects": objects_for_group,
@@ -249,11 +243,11 @@ class Fdm:
         :param objects: [str] Names of the Network or NetworkGroup objects to be added to the group
         :param description: str A description for the NetworkGroup
         """
-        all_objects = self.get_net_objects()
-        all_groups = self.get_net_groups()
-        all_nets = all_objects + all_groups
-        
-        return self.create_group(name, 'network', all_nets, objects, description)
+        objects_for_group = []
+        for obj_name in objects:
+            objects_for_group.append(self.get_net_obj_or_grp(obj_name))
+
+        return self.create_group(name, 'network', objects_for_group, description)
     
     def get_pending_changes(self):
         """
@@ -368,9 +362,9 @@ class Fdm:
 
     def get_interface_by_phy(self, phy_name: str):
         """
-        Get the dict for a NetworkObject with the given name
-        :param net_name: str The name of the NetworkObject to find
-        :return: dict if NetworkObject is found, None if not
+        Get the dict for a Interface with the given physical name e.g. GigabitEthernet0/0
+        :param phy_name: str The physical name of the Interface to find
+        :return: dict if Interface is found, None if not
         """
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
     
@@ -407,19 +401,19 @@ class Fdm:
 
     def get_port_groups(self, name=''):
         if name:
-            return self.get_obj_by_name('object/portgroups', name)
+            return self.get_obj_by_name('object/portgroups?limit=0&', name)
         else:
             return self.get_api('object/portgroups').json()['items']
 
     def get_tcp_ports(self, name=''):
         if name:
-            return self.get_obj_by_name('object/tcpports', name)
+            return self.get_obj_by_name('object/tcpports?limit=0&', name)
         else:
             return self.get_api('object/tcpports?limit=0').json()['items']
 
     def get_udp_ports(self, name=''):
         if name:
-            return self.get_obj_by_name('object/udpports', name)
+            return self.get_obj_by_name('object/udpports?limit=0&', name)
         else:
             return self.get_api('object/udpports?limit=0').json()['items']
 
@@ -427,7 +421,7 @@ class Fdm:
         """
         Get a Port (tcp/udp) object or PortGroup by the given name
         :param name: str The name of the object/group to find
-        :return: dict The object of the resource if found
+        :return: dict Contains a single dict for the object of the resource, if found
         """
 
         port = self.get_tcp_ports(name=name)
@@ -457,7 +451,7 @@ class Fdm:
                        "type": f"{type}portobject"
                        }
         return self.post_api(f'object/{type}ports', json.dumps(port_object))
-       
+
     def create_port_group(self, name: str, objects: list, description: str = None):
         """
         Creates a PortGroup object, containing at least 1 tcp/udp Port or an existing PortGroup
@@ -465,13 +459,12 @@ class Fdm:
         :param objects: [str] Names of the tcp/udp Port or PortGroup objects to be added to the group
         :param description: str A description for the PortGroup
         """
-        tcp_ports = self.get_tcp_ports()
-        udp_ports = self.get_udp_ports()
-        port_groups = self.get_port_groups()
-        all_ports = tcp_ports + udp_ports + port_groups
-        
-        return self.create_group(name, 'port', all_ports, objects, description)
-    
+        objects_for_group = []
+        for obj_name in objects:
+            objects_for_group.append(self.get_port_obj_or_grp(obj_name))
+
+        return self.create_group(name, 'port', objects_for_group, description)
+
     def get_initial_provision(self) -> list:
         return self.get_api('/devices/default/action/provision').json()['items']
 
@@ -520,8 +513,11 @@ class Fdm:
     def get_system_info(self) -> dict:
         return self.get_api('/operational/systeminfo/default').json()
 
-    def get_security_zone_filter(self, filter: str):
-        return self.get_obj_by_filter('object/securityzones', filter)
+    def get_security_zones(self, name=''):
+        if name:
+            return self.get_obj_by_name('object/securityzones?limit=0&', name)
+        else:
+            return self.get_api('object/securityzones?limit=0').json()['items']
 
     def create_security_zone(self, name, description='', interfaces=[], phy_interfaces=[], mode='ROUTED'):
         """
@@ -541,7 +537,7 @@ class Fdm:
         
         for intf in interfaces:
             intf_obj = self.get_interfaces(name=intf)
-            zone_interfaces.append(intf_obj[0])
+            zone_interfaces.append(intf_obj)
 
         zone_object = {"name": name,
                        "description": description,
@@ -560,10 +556,10 @@ class Fdm:
 
     def add_rule_item(self, item_name, item_obj, item_list):
         if item_obj:
-            item_list.append(item_obj[0])
+            item_list.append(item_obj)
         else:
             print(f'{item_name} does not exist!')
-    
+
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
                            dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
         """
@@ -592,7 +588,7 @@ class Fdm:
         rule_syslog = None
 
         for zone in src_zones:
-            z = self.get_security_zone_filter(f'name:{zone}')
+            z = self.get_security_zones(name=zone)
             self.add_rule_item(zone, z, rule_src_zones)
 
         for network in src_networks:
@@ -604,7 +600,7 @@ class Fdm:
             self.add_rule_item(port, p, rule_src_ports)
 
         for zone in dst_zones:
-            z = self.get_security_zone_filter(f'name:{zone}')
+            z = self.get_security_zones(name=zone)
             self.add_rule_item(zone, z, rule_dst_zones)
 
         for network in dst_networks:
@@ -619,7 +615,7 @@ class Fdm:
             ip = self.get_intrusion_policies(int_policy)
             if ip:
                 # Can't just pass the whole IntrusionPolicy object through like most others, so just pass the req'd fields
-                rule_int_policy = self._get_object_subset(ip[0])
+                rule_int_policy = self._get_object_subset(ip)
 
         if syslog:
             syslog_server = self.get_syslog_servers(syslog)
@@ -697,7 +693,7 @@ class Fdm:
 
         if interface:
             use_mgmt = False
-            interface_object = self.get_interfaces(name=interface)[0]            
+            interface_object = self.get_interfaces(name=interface)
 
         syslog_object = {"deviceInterface": interface_object,
                         "useManagementInterface": use_mgmt,
