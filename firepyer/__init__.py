@@ -148,7 +148,7 @@ class Fdm:
                 if obj[name_field_label] == obj_name:
                     return obj
         return None
-    
+
     def get_paged_items(self, uri: str) -> list:
         response = self.get_api(uri).json()
         all_items = response['items']
@@ -162,17 +162,20 @@ class Fdm:
         return all_items
 
     def get_obj_by_filter(self, url, filter):
-        return self.get_api(f'{url}?filter={filter}').json()['items']
+        first_param = '?'
+        if url.endswith('&'):
+            first_param = ''
+        return self.get_api(f'{url}{first_param}filter={filter}').json()['items']
 
     def get_obj_by_name(self, url, name):
         return self.get_obj_by_filter(url, filter=f'name:{name}')
 
-    def get_net_objects(self):
-        return self.get_api('object/networks?limit=0').json()
-    
-    def get_net_objects_filter(self, filter: str):
-        return self.get_obj_by_filter('object/networks', filter)
-    
+    def get_net_objects(self, name='') -> list:
+        if name:
+            return self.get_obj_by_name('object/networks?limit=0&', name)
+        else:
+            return self.get_api('object/networks?limit=0').json()['items']
+
     def get_net_object_by_name(self, net_name: str):
         """
         Get the dict for a NetworkObject with the given name
@@ -180,15 +183,12 @@ class Fdm:
         :return: dict if NetworkObject is found, None if not
         """
         return self.get_class_by_name(self.get_net_objects(), net_name)
-    
-    def get_net_groups(self, name):
-        if name:
-            return self.get_obj_by_name('object/networkgroups', name)
-        else:
-            return self.get_api('object/networkgroups?limit=0').json()
 
-    def get_net_group_filter(self, filter: str):
-        return self.get_obj_by_filter('object/networkgroups', filter)
+    def get_net_groups(self, name='') -> list:
+        if name:
+            return self.get_obj_by_name('object/networkgroups?limit=0&', name)
+        else:
+            return self.get_api('object/networkgroups?limit=0').json()['items']
     
     def get_net_obj_or_grp(self, name) -> dict:
         """
@@ -197,11 +197,11 @@ class Fdm:
         :return: dict The object of the resource if found 
         """
         
-        net = self.get_net_objects_filter(f'name:{name}')
+        net = self.get_net_objects(name=name)
         if net:
             return net
         else:
-            net = self.get_net_group_filter(f'name:{name}')
+            net = self.get_net_groups(name=name)
             if net:
                 return net
         return None
@@ -251,7 +251,7 @@ class Fdm:
         """
         all_objects = self.get_net_objects()
         all_groups = self.get_net_groups()
-        all_nets = all_objects['items'] + all_groups['items']
+        all_nets = all_objects + all_groups
         
         return self.create_group(name, 'network', all_nets, objects, description)
     
@@ -319,24 +319,20 @@ class Fdm:
         else:
             print('No pending changes!')
     
-    def get_vrfs(self):
-        return self.get_api('devices/default/routing/virtualrouters').json()['items']
-    
-    def get_vrf_by_name(self, vrf_name: str):
-        """
-        Get the dict for a VRF with the given name
-        :param vrf_name: str The name of the VRF to find
-        :return: dict if VRF is found, None if not
-        """
-        return self.get_class_by_name(self.get_vrfs(), vrf_name)
+    def get_vrfs(self, name='') -> list:
+        if name:
+            return self.get_obj_by_name('devices/default/routing/virtualrouters', name)
+        else:
+            return self.get_api('devices/default/routing/virtualrouters').json()['items']
 
     def get_bgp_general_settings(self):
-        return self.get_api('devices/default/routing/bgpgeneralsettings').json()
-    
-    def set_bgp_general_settings(self):
+        return self.get_api('devices/default/routing/bgpgeneralsettings').json()['items']
+
+    def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None):
         bgp_settings = {"name": "BgpGeneralSettings",
-                        "asNumber": "65500",
-                        # "routerId": "string",
+                        "description": description,
+                        "asNumber": asn,
+                        "routerId": router_id,
                         # "scanTime": 0,
                         # "aggregateTimer": 0,
                         # "bgpNextHopTriggerDelay": 0,
@@ -350,17 +346,17 @@ class Fdm:
                         "type": "bgpgeneralsettings"
                         }
         return self.post_api('devices/default/routing/bgpgeneralsettings', data=json.dumps(bgp_settings))
-    
-    def get_bgp_settings(self):
-        vrf_id = self.get_vrf_by_name('Global')['id']
+
+    def get_bgp_settings(self, vrf='Global'):
+        vrf_id = self.get_vrfs(vrf)['id']
         bgp_settings = self.get_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp')
         return bgp_settings.json()
-    
-    def set_bgp_settings(self):
+
+    def set_bgp_settings(self, vrf='Global'):
         with open('bgp_settings.json') as bgp_settings:
             bgp_settings_json = json.load(bgp_settings)
 
-        vrf_id = self.get_vrf_by_name('Global')['id']
+        vrf_id = self.get_vrfs(vrf)['id']
         return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
                              json.dumps(bgp_settings_json))
 
@@ -394,38 +390,38 @@ class Fdm:
                 if response is not None:
                     pprint(response.json())
     
-    def get_dhcp_servers(self):
-        return self.get_api('devicesettings/default/dhcpservercontainers').json()
-    
+    def get_dhcp_servers(self) -> list:
+        return self.get_api('devicesettings/default/dhcpservercontainers').json()['items']
+
     def delete_dhcp_server_pools(self):
-        dhcp_server = self.get_dhcp_servers()['items'][0]
+        dhcp_server = self.get_dhcp_servers()[0]
         dhcp_server['servers'] = []
         return self.put_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
                             data=json.dumps(dhcp_server))
-    
+
     def send_command(self, cmd: str):
         cmd_body = {"commandInput": cmd,
                     "type": "Command",}
         return self.post_api('action/command',
                              data=json.dumps(cmd_body)).json()
-    
-    def get_port_groups(self, filter=''):
-        if filter:
-            return self.get_obj_by_filter('object/portgroups', filter)
+
+    def get_port_groups(self, name=''):
+        if name:
+            return self.get_obj_by_name('object/portgroups', name)
         else:
-            return self.get_api('object/portgroups').json()
-    
-    def get_tcp_ports(self, filter=''):
-        if filter:
-            return self.get_obj_by_filter('object/tcpports', filter)
+            return self.get_api('object/portgroups').json()['items']
+
+    def get_tcp_ports(self, name=''):
+        if name:
+            return self.get_obj_by_name('object/tcpports', name)
         else:
-            return self.get_api('object/tcpports?limit=0').json()
-    
-    def get_udp_ports(self, filter=''):
-        if filter:
-            return self.get_obj_by_filter('object/udpports', filter)
+            return self.get_api('object/tcpports?limit=0').json()['items']
+
+    def get_udp_ports(self, name=''):
+        if name:
+            return self.get_obj_by_name('object/udpports', name)
         else:
-            return self.get_api('object/udpports?limit=0').json()
+            return self.get_api('object/udpports?limit=0').json()['items']
 
     def get_port_obj_or_grp(self, name) -> dict:
         """
@@ -434,15 +430,15 @@ class Fdm:
         :return: dict The object of the resource if found
         """
 
-        port = self.get_tcp_ports(filter=f'name:{name}')
+        port = self.get_tcp_ports(name=name)
         if port:
             return port
         else:
-            port = self.get_udp_ports(filter=f'name:{name}')
+            port = self.get_udp_ports(name=name)
             if port:
                 return port
             else:
-                port = self.get_port_groups(filter=f'name:{name}')
+                port = self.get_port_groups(name=name)
                 if port:
                     return port
         return None
@@ -472,16 +468,16 @@ class Fdm:
         tcp_ports = self.get_tcp_ports()
         udp_ports = self.get_udp_ports()
         port_groups = self.get_port_groups()
-        all_ports = tcp_ports['items'] + udp_ports['items'] + port_groups['items']
+        all_ports = tcp_ports + udp_ports + port_groups
         
         return self.create_group(name, 'port', all_ports, objects, description)
     
-    def get_initial_provision(self):
-        return self.get_api('/devices/default/action/provision').json()
-    
+    def get_initial_provision(self) -> list:
+        return self.get_api('/devices/default/action/provision').json()['items']
+
     def set_initial_provision(self, new_password, current_password='Admin123'):
         get_provis = self.get_initial_provision()
-        provision = get_provis['items'][0]
+        provision = get_provis[0]
         provision["acceptEULA"] = True
         provision["currentPassword"] = current_password
         provision["newPassword"] = new_password
@@ -491,11 +487,11 @@ class Fdm:
         return self.post_api('/devices/default/action/provision',
                              data=json.dumps(provision))
 
-    def get_hostname(self):
-        return self.get_api('devicesettings/default/devicehostnames').json()
+    def get_hostname(self) -> list:
+        return self.get_api('devicesettings/default/devicehostnames').json()['items']
     
     def set_hostname(self, hostname):
-        current_hostname = self.get_hostname()['items'][0]
+        current_hostname = self.get_hostname()[0]
         hostname_id = current_hostname['id']
         new_hostname = {"hostname": hostname,
                         "id": hostname_id,
@@ -571,7 +567,7 @@ class Fdm:
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
                            dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
         """
-        Create an access rule
+        Create an access rule, if any optional src/dst values are not provided they are treated as 'any'
         :param name: str Name of the AccessRule
         :param action: str The action the rule should take, should be one of ['PERMIT', 'TRUST', 'DENY']
         :param src_zones: [str] An optional list of names of source Security Zones
