@@ -13,6 +13,15 @@ ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29m
 
 class Fdm:
     def __init__(self, host, username, password):
+        """Provides a connection point to an FTD device
+
+        :param host: The IP or hostname of the FTD device
+        :type host: str
+        :param username: Username to login to FDM
+        :type username: str
+        :param password: Password to login to FDM
+        :type password: str
+        """
         self.ftd_host = host
         self.username = username
         self.password = password
@@ -175,6 +184,13 @@ class Fdm:
             return None
 
     def get_net_objects(self, name=''):
+        """Gets all NetworkObjects or a single NetworkObject if a name is provided
+
+        :param name: The name of the NetworkObject to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all NetworkObjects if no name is provided, or a dict of the single NetworkObject with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/networks?limit=0&', name)
         else:
@@ -189,6 +205,13 @@ class Fdm:
         return self.get_class_by_name(self.get_net_objects(), net_name)
 
     def get_net_groups(self, name='') -> list:
+        """Gets all NetworkGroups or a single NetworkGroup if a name is provided
+
+        :param name: The name of a NetworkGroup to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all NetworkGroups if no name is provided, or a dict of the single NetworkGroup with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/networkgroups?limit=0&', name)
         else:
@@ -237,11 +260,16 @@ class Fdm:
         return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
 
     def create_network_group(self, name: str, objects: list, description: str = None):
-        """
-        Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
-        :param name: str Name of the NetworkGroup
-        :param objects: [str] Names of the Network or NetworkGroup objects to be added to the group
-        :param description: str A description for the NetworkGroup
+        """Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
+
+        :param name: Name of the NetworkGroup to be created
+        :type name: str
+        :param objects: Names of the Network or NetworkGroup objects to be added to the group
+        :type objects: list
+        :param description: A description for the NetworkGroup, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response|None
         """
         objects_for_group = []
         for obj_name in objects:
@@ -562,20 +590,33 @@ class Fdm:
 
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
                            dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
-        """
-        Create an access rule, if any optional src/dst values are not provided they are treated as 'any'
-        :param name: str Name of the AccessRule
-        :param action: str The action the rule should take, should be one of ['PERMIT', 'TRUST', 'DENY']
-        :param src_zones: [str] An optional list of names of source Security Zones
-        :param src_networks: [str] An optional list of names of source networks, names can be of either NetworkObject or NetworkGroup
-        :param src_ports: [str] An optional list of names of source ports, names can be of either tcp/udp PortObject or PortGroup
-        :param dst_zones: [str] An optional list of destination Security Zones
-        :param dst_networks: [str] An optional list of names of destination networks, names can be of either NetworkObject or NetworkGroup
-        :param dst_ports: [str] An optional list of names of destination ports, names can be of either tcp/udp PortObject or PortGroup
-        :param int_policy: str Optionally provide a name of the IntrusionPolicy to apply to the rule
-        :param syslog: str Optionally provide the name of a SyslogServer to log the rule to, in the format of IP:PORT
-        :param log: str Optionally log the rule at start and end of connection, end of connection, or not at all, should be one of ['BOTH', 'END']
-        :return: 
+        """Create an AccessRule to be used in the main Access Policy. If any optional src/dst values are not
+        provided, they are treated as an 'any'
+
+        :param name: Name of the AccessRule
+        :type name: str
+        :param action: The action the rule should take if matched, should be one of ['PERMIT', 'TRUST', 'DENY']
+        :type action: str
+        :param src_zones: List of names of source Security Zones, defaults to []
+        :type src_zones: list, optional
+        :param src_networks: List of names of source networks, names can be of either NetworkObject or NetworkGroup, defaults to []
+        :type src_networks: list, optional
+        :param src_ports: List of names of source ports, names can be of either tcp/udp PortObject or PortGroup, defaults to []
+        :type src_ports: list, optional
+        :param dst_zones: List of destination Security Zones, defaults to []
+        :type dst_zones: list, optional
+        :param dst_networks: List of names of destination networks, names can be of either NetworkObject or NetworkGroup, defaults to []
+        :type dst_networks: list, optional
+        :param dst_ports: List of names of destination ports, names can be of either tcp/udp PortObject or PortGroup, defaults to []
+        :type dst_ports: list, optional
+        :param int_policy: Name of an IntrusionPolicy to apply to the rule, defaults to ''
+        :type int_policy: str, optional
+        :param syslog: Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to ''
+        :type syslog: str, optional
+        :param log: Log the rule at start and end of connection, end of connection, or not at all, should be one of ['BOTH', 'END', ''], defaults to ''
+        :type log: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response|None
         """
 
         rule_src_zones = []

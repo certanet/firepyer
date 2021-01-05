@@ -1,0 +1,4 @@
+get_net_groups
+get_net_objects
+create_access_rule
+create_network_group
