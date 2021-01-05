@@ -196,14 +196,6 @@ class Fdm:
         else:
             return self.get_api('object/networks?limit=0').json()['items']
 
-    def get_net_object_by_name(self, net_name: str):
-        """
-        Get the dict for a NetworkObject with the given name
-        :param net_name: str The name of the NetworkObject to find
-        :return: dict if NetworkObject is found, None if not
-        """
-        return self.get_class_by_name(self.get_net_objects(), net_name)
-
     def get_net_groups(self, name='') -> list:
         """Gets all NetworkGroups or a single NetworkGroup if a name is provided
 
@@ -342,15 +334,40 @@ class Fdm:
             print('No pending changes!')
     
     def get_vrfs(self, name='') -> list:
+        """Gets all VRFs or a single VRF if a name is provided
+
+        :param name: The name of a VRF to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all VRFs if no name is provided, or a dict of the single VRF with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('devices/default/routing/virtualrouters', name)
         else:
             return self.get_api('devices/default/routing/virtualrouters').json()['items']
 
     def get_bgp_general_settings(self):
-        return self.get_api('devices/default/routing/bgpgeneralsettings').json()['items']
+        """Gets the device's general BGP settings if any are set
+
+        :return: The BGPGeneralSettings object or None if none are set
+        :rtype: dict
+        """
+        return self.get_api('devices/default/routing/bgpgeneralsettings').json()['items'][0]
 
     def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None):
+        """Set the device's general BGP settings
+
+        :param asn: The AS number for the BGP process
+        :type asn: str
+        :param name: A name for the settings, defaults to 'BgpGeneralSettings'
+        :type name: str, optional
+        :param description: A description for the settings, defaults to None
+        :type description: str, optional
+        :param router_id: A router ID for the BGP process, defaults to None
+        :type router_id: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response|None
+        """
         bgp_settings = {"name": "BgpGeneralSettings",
                         "description": description,
                         "asNumber": asn,
@@ -370,9 +387,15 @@ class Fdm:
         return self.post_api('devices/default/routing/bgpgeneralsettings', data=json.dumps(bgp_settings))
 
     def get_bgp_settings(self, vrf='Global'):
+        """Get the BGP settings for a specifc VRF or the default (Global)
+
+        :param vrf: Name of a VRF to get the BGP settings, defaults to 'Global'
+        :type vrf: str, optional
+        :return: The BGPSettings object or None if none are set
+        :rtype: dict
+        """
         vrf_id = self.get_vrfs(vrf)['id']
-        bgp_settings = self.get_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp')
-        return bgp_settings.json()
+        return self.get_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp').json()['items'][0]
 
     def set_bgp_settings(self, vrf='Global'):
         with open('bgp_settings.json') as bgp_settings:
