@@ -611,11 +611,14 @@ class Fdm:
         return self.post_api('/devices/default/action/provision',
                              data=json.dumps(provision))
 
-    def get_hostname(self) -> list:
-        return self.get_api('devicesettings/default/devicehostnames').json()['items']
+    def get_hostname_obj(self) -> dict:
+        return self.get_api('devicesettings/default/devicehostnames').json()['items'][0]
+
+    def get_hostname(self) -> str:
+        return self.get_hostname_obj()['hostname']
 
     def set_hostname(self, hostname):
-        current_hostname = self.get_hostname()[0]
+        current_hostname = self.get_hostname_obj()
         hostname_id = current_hostname['id']
         new_hostname = {"hostname": hostname,
                         "id": hostname_id,
