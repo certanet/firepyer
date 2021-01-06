@@ -5,7 +5,6 @@ from time import sleep
 from datetime import datetime
 
 import requests
-from requests import api
 
 
 ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29mins in secs
@@ -33,14 +32,14 @@ class Fdm:
         # Check for http allows passing in full URL e.g. from pagination next page link
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
-        
+
         headers = {"Accept": "application/json", 'User-Agent': 'firepyer/0.0.1'}
         if get_auth:
             headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
         if not files:
             # When sending files, requests will auto populate CT as multipart/form-data
             headers['Content-Type'] = "application/json"
-        
+
         try:
             response = requests.request(method, uri,
                                         data=data,
@@ -62,22 +61,22 @@ class Fdm:
         except Exception as e:
             print(f"Unable to {method} request: {str(e)}")
             return None
-        
+
     def post_api(self, uri, data=None, get_auth=True, files=None):
         return self.api_call(uri, 'POST', data=data, get_auth=get_auth, files=files)
-    
+
     def put_api(self, uri, data=None):
         return self.api_call(uri, 'PUT', data=data)
-        
+
     def get_api(self, uri, data=None):
         return self.api_call(uri, 'GET', data=data)
-    
+
     def check_api_status(self):
         api_alive = False
-        
+
         while not api_alive:
             api_status = self.api_call('#/login', 'GET', get_auth=False)
-            if api_status != None:
+            if api_status is not None:
                 if api_status.status_code == 401:
                     print('API Alive!')
                     api_alive = True
@@ -88,16 +87,16 @@ class Fdm:
                 # Exception when device is rebooted/unreachable:
                 # HTTPSConnectionPool
             sleep(10)
-    
+
     def get_access_token(self) -> str:
         """
         Login to FTD device and obtain an access token. The access token is required so that the user can
-        connect to the device to send REST API requests. 
+        connect to the device to send REST API requests.
         :return: OAUTH access token
         """
         access_token = None
         access_token_expiry_time = None
-        
+
         payload = f'{{"grant_type": "password", "username": "{self.username}", "password": "{self.password}"}}'
         resp = self.post_api('fdm/token', payload, get_auth=False)
         if resp is not None:
@@ -105,17 +104,17 @@ class Fdm:
 
             epoch_now = datetime.timestamp(datetime.now())
             access_token_expiry_time = epoch_now + ACCESS_TOKEN_VALID_SECS
-            
+
             print(f"Login successful, access_token obtained, expires at: {datetime.fromtimestamp(access_token_expiry_time)}")
 
         return access_token, access_token_expiry_time
-    
+
     def check_get_access_token(self) -> str:
         """
         Checks if a valid (29mins hasn't passed since obtaining) access token exists, if not gets one
         :return: str Either a new or the existing valid access token
         """
-        
+
         get_token = False
         epoch_now = datetime.timestamp(datetime.now())
 
@@ -125,12 +124,12 @@ class Fdm:
         elif epoch_now > self.access_token_expiry_time:
             # Token expired
             get_token = True
-        
+
         if get_token:
             self.access_token, self.access_token_expiry_time = self.get_access_token()
         return self.access_token
-    
-    def _get_object_subset(self, obj:dict) -> dict:
+
+    def _get_object_subset(self, obj: dict) -> dict:
         """
         Gets the significant fields from a full object
         :param obj: dict An object retrieved from any endpoint
@@ -142,7 +141,7 @@ class Fdm:
         object_subset['version'] = obj['version']
         object_subset['name'] = obj['name']
         return object_subset
-    
+
     def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name') -> dict:
         """
         Get the dict for the Class with the given name
@@ -151,7 +150,7 @@ class Fdm:
         :param name_field_label: str The field to use as the 'name' to match on, defaults to name
         :return: dict if an object with the name is found, None if not
         """
-        
+
         if get_class is not None:
             for obj in get_class:
                 if obj[name_field_label] == obj_name:
@@ -208,7 +207,7 @@ class Fdm:
             return self.get_obj_by_name('object/networkgroups?limit=0&', name)
         else:
             return self.get_api('object/networkgroups?limit=0').json()['items']
-    
+
     def get_net_obj_or_grp(self, name) -> dict:
         """
         Get a network object or network group by the given name
@@ -268,7 +267,7 @@ class Fdm:
             objects_for_group.append(self.get_net_obj_or_grp(obj_name))
 
         return self.create_group(name, 'network', objects_for_group, description)
-    
+
     def get_pending_changes(self):
         """
         Sends a GET rquest to obtain the pending changes from the FTD device
@@ -316,7 +315,7 @@ class Fdm:
             pprint(state)
 
         return state
-    
+
     def deploy_policy(self):
         if self.get_pending_changes():
             deployment_id = self.post_deployment()
@@ -332,7 +331,7 @@ class Fdm:
                 print('Deploymentg request failed, unable to get deployment ID!')
         else:
             print('No pending changes!')
-    
+
     def get_vrfs(self, name='') -> list:
         """Gets all VRFs or a single VRF if a name is provided
 
@@ -368,7 +367,7 @@ class Fdm:
         :return: The full requests response object or None if an error occurred
         :rtype: Response|None
         """
-        bgp_settings = {"name": "BgpGeneralSettings",
+        bgp_settings = {"name": name,
                         "description": description,
                         "asNumber": asn,
                         "routerId": router_id,
@@ -397,13 +396,73 @@ class Fdm:
         vrf_id = self.get_vrfs(vrf)['id']
         return self.get_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp').json()['items'][0]
 
-    def set_bgp_settings(self, vrf='Global'):
-        with open('bgp_settings.json') as bgp_settings:
-            bgp_settings_json = json.load(bgp_settings)
+    def set_bgp_settings(self, asn, name='', description=None, router_id=None, vrf='Global', af=4, auto_summary=False,
+                         neighbours=[], networks=[], default_originate=False):
+        """Configures BGP settings for the give (or default) VRF
+
+        :param asn: The AS Number of the BGP process, MUST be the same as in the BGPGeneralSettings
+        :type asn: str
+        :param name: Name for the BGPSettings, MUST be unique across the device, defaults to 'VRFNAME-BGPSettings'
+        :type name: str, optional
+        :param description: Description for the BGPSettings, defaults to None
+        :type description: str, optional
+        :param router_id: A router ID for the BGP process, defaults to None
+        :type router_id: str, optional
+        :param vrf: Name of the VRF to configure BGP in, defaults to 'Global'
+        :type vrf: str, optional
+        :param af: BGP Address-Family to use, should be either [4, 6], defaults to 4
+        :type af: int, optional
+        :param auto_summary: Automatically summarise subnet routes to network routes, defaults to False
+        :type auto_summary: bool, optional
+        :param neighbours: Neighbours to add to the BGP process, each neighbour in the list should be a dict in format {"remoteAs": "65001", "activate": True, "ipv4Address": "192.168.1.1"}, defaults to []
+        :type neighbours: list, optional
+        :param networks: Names of NetworkObjects to add to as networks into the BGP, defaults to []
+        :type networks: list, optional
+        :param default_originate: Enable or disable default originate for BGP, defaults to False
+        :type default_originate: bool, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response|None
+        """
+        if not name:
+            name = f'{vrf}-BGPSettings'
+
+        af_networks = []
+        af_neighbours = []
+
+        if af == 4:
+            for network in networks:
+                net_obj = self.get_net_objects(network)
+                af_net = {"routeMap": {},  # TODO
+                          "ipv4Network": net_obj,
+                          "type": "afipv4network"
+                          }
+                af_networks.append(af_net)
+
+            for neighbour in neighbours:
+                neighbour['type'] = 'neighboripv4'
+                af_neighbours.append(neighbour)
+
+            address_family = {"addressFamilyIPv4": {
+                                "autoSummary": auto_summary,
+                                "neighbors": af_neighbours,
+                                "networks": af_networks,
+                                "defaultInformationOrginate": default_originate,
+                                "type": "afipv4"}
+                              }
+        elif af == 6:
+            pass  # TODO
+
+        bgp_settings = {"name": name,
+                        "description": description,
+                        "asNumber": asn,
+                        "routerId": router_id,
+                        "type": "bgp"
+                        }
+        bgp_settings.update(address_family)
 
         vrf_id = self.get_vrfs(vrf)['id']
         return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
-                             json.dumps(bgp_settings_json))
+                             json.dumps(bgp_settings))
 
     def get_interfaces(self, name=''):
         if name:
@@ -418,23 +477,23 @@ class Fdm:
         :return: dict if Interface is found, None if not
         """
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
-    
+
     def update_interfaces(self):
         with open('interfaces.json') as int_settings:
             int_settings_dict = json.load(int_settings)
-        
+
         for interface in int_settings_dict:
             interface_obj = self.get_interface_by_phy(interface)
             if interface_obj is not None:
                 interface_obj['description'] = int_settings_dict[interface]['description']
                 interface_obj['ipv4']['ipAddress']['ipAddress'] = int_settings_dict[interface]['ip']
                 interface_obj['ipv4']['ipAddress']['netmask'] = int_settings_dict[interface]['netmask']
-                
+
                 response = self.put_api(f'devices/default/interfaces/{interface_obj["id"]}',
                                         data=json.dumps(interface_obj))
                 if response is not None:
                     pprint(response.json())
-    
+
     def get_dhcp_servers(self) -> list:
         return self.get_api('devicesettings/default/dhcpservercontainers').json()['items']
 
@@ -446,23 +505,44 @@ class Fdm:
 
     def send_command(self, cmd: str):
         cmd_body = {"commandInput": cmd,
-                    "type": "Command",}
+                    "type": "Command"}
         return self.post_api('action/command',
                              data=json.dumps(cmd_body)).json()
 
     def get_port_groups(self, name=''):
+        """Gets all PortGroups or a single PortGroup if a name is provided
+
+        :param name: The name of a PortGroup to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all PortGroups if no name is provided, or a dict of the single PortGroup with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/portgroups?limit=0&', name)
         else:
             return self.get_api('object/portgroups').json()['items']
 
     def get_tcp_ports(self, name=''):
+        """Gets all TCP type Ports or a single TCP Port object if a name is provided
+
+        :param name: The name of a TCP Port to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all TCP Ports if no name is provided, or a dict of the single TCP Port with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/tcpports?limit=0&', name)
         else:
             return self.get_api('object/tcpports?limit=0').json()['items']
 
     def get_udp_ports(self, name=''):
+        """Gets all UDP type Ports or a single UDP Port object if a name is provided
+
+        :param name: The name of a UDP Port to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all UDP Ports if no name is provided, or a dict of the single UDP Port with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/udpports?limit=0&', name)
         else:
@@ -533,7 +613,7 @@ class Fdm:
 
     def get_hostname(self) -> list:
         return self.get_api('devicesettings/default/devicehostnames').json()['items']
-    
+
     def set_hostname(self, hostname):
         current_hostname = self.get_hostname()[0]
         hostname_id = current_hostname['id']
@@ -543,18 +623,18 @@ class Fdm:
                         "type": "devicehostname"}
 
         return self.put_api(f'devicesettings/default/devicehostnames/{hostname_id}',
-                             data=json.dumps(new_hostname))
+                            data=json.dumps(new_hostname))
 
     def get_upgrade_files(self):
         return self.get_api('managedentity/upgradefiles').json()
-    
+
     def get_upgrade_file(self, file_id):
         return self.get_api(f'managedentity/upgradefiles/{file_id}').json()
 
     def upload_upgrade(self, filename):
         # API parameter is called fileToUpload
         files = {'fileToUpload': open(filename, 'rb')}
-        
+
         return self.post_api('action/uploadupgrade',
                              files=files)
 
@@ -585,7 +665,7 @@ class Fdm:
         for intf in phy_interfaces:
             intf_obj = self.get_interface_by_phy(intf)
             zone_interfaces.append(intf_obj)
-        
+
         for intf in interfaces:
             intf_obj = self.get_interfaces(name=intf)
             zone_interfaces.append(intf_obj)
@@ -600,7 +680,7 @@ class Fdm:
 
     def get_acp(self):
         return self.get_api('policy/accesspolicies').json()['items']
-    
+
     def get_access_rules(self):
         policy_id = self.get_acp()[0]['id']
         return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
@@ -636,7 +716,7 @@ class Fdm:
         :type int_policy: str, optional
         :param syslog: Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to ''
         :type syslog: str, optional
-        :param log: Log the rule at start and end of connection, end of connection, or not at all, should be one of ['BOTH', 'END', ''], defaults to ''
+        :param log: Log the rule at start and end of connection, end of connection, or no log, should be one of ['BOTH', 'END', ''], defaults to ''
         :type log: str, optional
         :return: The full requests response object or None if an error occurred
         :rtype: Response|None
@@ -674,7 +754,7 @@ class Fdm:
         for port in dst_ports:
             p = self.get_port_obj_or_grp(port)
             self.add_rule_item(port, p, rule_dst_ports)
-        
+
         if int_policy:
             ip = self.get_intrusion_policies(int_policy)
             if ip:
@@ -735,7 +815,7 @@ class Fdm:
             return self.get_obj_by_name('policy/intrusionpolicies', name)
         else:
             return self.get_api('policy/`intrusionpolicies').json()['items']
-    
+
     def get_syslog_servers(self, name=''):
         if name:
             # Syslog server names are stored as IP:PORT, so unable to query using URL filter
@@ -753,18 +833,18 @@ class Fdm:
         :return: dict The new SyslogServer object, or the error message from the JSON response
         """
         use_mgmt = True
-        interface_obj = None
+        interface_object = None
 
         if interface:
             use_mgmt = False
             interface_object = self.get_interfaces(name=interface)
 
         syslog_object = {"deviceInterface": interface_object,
-                        "useManagementInterface": use_mgmt,
-                        "protocol": protocol.upper(),
-                        "host": ip,
-                        "port": port,
-                        "type": "syslogserver"
-                        }
+                         "useManagementInterface": use_mgmt,
+                         "protocol": protocol.upper(),
+                         "host": ip,
+                         "port": port,
+                         "type": "syslogserver"
+                         }
         return self.post_api('object/syslogalerts',
                              data=json.dumps(syslog_object)).json()
