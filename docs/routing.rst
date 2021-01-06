@@ -1,7 +1,7 @@
 Routing
 =============
 
-View and cofigure routing for the FTD device, including VRFs, static routes, OSPF and BGP.
+View and configure routing for the FTD device, including VRFs, static routes, OSPF and BGP.
 
 BGP
 ---------
@@ -28,3 +28,4 @@ VRFs
    :noindex:
 
    .. automethod:: get_vrfs
+   .. fp_output:: get_vrfs

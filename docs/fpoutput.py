@@ -19,6 +19,7 @@ class OutputDirective(Directive):
         with open(os.path.join(srcdir, 'fp_output', method + suffix)) as fd:
             content = fd.read()
         if '\n\n' in content:
+            method = method.split('_params')[0]
             params, result = content.split('\n\n')
             params = ', '.join(params.split('\n'))
         else:
