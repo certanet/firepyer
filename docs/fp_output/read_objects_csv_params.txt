@@ -1,0 +1,10 @@
+'network_objects.csv'
+
+[{'description': 'HOST1-NIC1',
+  'name': 'Host1-NIC1',
+  'type': 'host',
+  'value': '10.0.1.1'},
+ {'description': 'HOST1-NIC2',
+  'name': 'Host1-NIC2',
+  'type': 'host',
+  'value': '10.0.1.2'}]

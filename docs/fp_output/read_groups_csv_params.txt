@@ -1,0 +1,13 @@
+'network_groups.csv'
+
+[{'description': 'Host1',
+  'name': 'GROUP-HOST1',
+  'objects': ['Host1-NIC1',
+              'Host1-NIC2']},
+ {'description': 'Host2',
+  'name': 'GROUP-HOST2',
+  'objects': ['Host2-NIC1',
+              'Host2-NIC2']},
+ {'description': 'All hosts',
+  'name': 'GROUP-ALL-HOSTS',
+  'objects': ['GROUP-HOST1', 'GROUP-HOST2']}]

@@ -23,4 +23,11 @@ The intended usage is to replace some of the tedious clicking tasks from the GUI
    routing
 
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Misc:
+
+   utils
+
+
 * :ref:`genindex`

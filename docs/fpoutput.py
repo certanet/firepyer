@@ -4,15 +4,22 @@ from sphinx.util.nodes import set_source_info
 import os
 import re
 
+
 def setup(app):
     app.add_directive('fp_output', OutputDirective)
 
+
 class OutputDirective(Directive):
     required_arguments = 1
-    optional_arguments = 0
+    optional_arguments = 1
 
     def run(self):
         method = self.arguments[0]
+        try:
+            obj_name = self.arguments[1]
+        except IndexError:
+            obj_name = 'fdm'
+
         suffix = '.txt'
         assert re.match('^[a-zA-Z][a-zA-Z0-9_]*$', method)
         srcdir = self.state.document.settings.env.srcdir
@@ -25,7 +32,7 @@ class OutputDirective(Directive):
         else:
             params, result = '', content
 
-        out = ">>> fdm.%s(%s)\n%s" % (method, params, result)
+        out = f">>> {obj_name}.{method}({params})\n{result}"
         literal = nodes.literal_block(out, out)
         literal['language'] = 'python'
         set_source_info(self, literal)

@@ -18,7 +18,7 @@ Alternatively, the latest release will soon be available to download from PyPI, 
 
 ## Usage
 
-All functionailty for interacting with an FTD device is contained within the Fdm class and it’s methods. Authentication is taken care of transparently when calling a method, so this doesn’t need to be done implicitly.
+All functionailty for interacting with an FTD device is contained within the Fdm class and it’s methods. Authentication is taken care of transparently when calling a method, so this doesn’t need to be done explicilty.
 
 Import the Fdm class and instantiate an object, passing in your FTD hostname/IP, username and password:
 
