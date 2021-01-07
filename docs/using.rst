@@ -1,8 +1,11 @@
 Using Firepyer
 ==================
 
+Interacting
+-----------
+
 All functionailty for interacting with an FTD device is contained within the Fdm class and it's methods.
-Authentication is taken care of transparently when calling a method, so this doesn't need to be done implicitly.
+Authentication is taken care of transparently when calling a method, so this doesn't need to be done explicitly.
 
 .. module:: firepyer
 
@@ -29,3 +32,13 @@ Then call any of the available methods to run against your FTD:
           'type': 'networkobject',
           'value': '0.0.0.0/0',
           'version': 'kxd2dzxm2gtwn'}
+
+Error Handling
+--------------
+Some common errors that may be encountered when using Fdm methods:
+
+.. module:: firepyer.exceptions
+
+.. autoclass:: AuthError
+.. autoclass:: ResourceNotFound
+.. autoclass:: UnreachableError

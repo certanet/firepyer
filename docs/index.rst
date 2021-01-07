@@ -9,7 +9,7 @@ The intended usage is to replace some of the tedious clicking tasks from the GUI
    :caption: Getting Started:
 
    install
-   fdm
+   using
 
 
 .. toctree::

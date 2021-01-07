@@ -10,7 +10,10 @@ Pending changes can be viewed, discarded or commited via the API.
 .. class:: Fdm
    :noindex:
 
-   .. automethod:: post_deployment
+   .. automethod:: deploy_config
+   .. automethod:: deploy_now
+   .. fp_output:: deploy_now
    .. automethod:: get_deployment_status
-   .. automethod:: deploy_policy
+   .. fp_output:: get_deployment_status_params
    .. automethod:: get_pending_changes
+   .. fp_output:: get_pending_changes

@@ -1,0 +1,17 @@
+'GROUP-ALL-HOSTS'
+
+{'description': 'GROUP-ALL-HOSTS',
+  'id': '2904a9b9-4db6-11eb-aab5-93170f9c3b34',
+  'isSystemDefined': False,
+  'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/networkgroups/2904a9b9-4db6-11eb-aab5-93170f9c3b34'},
+  'name': 'GROUP-ALL-HOSTS',
+  'objects': [{'id': '26dbfd53-4db6-11eb-aab5-4dba63992bb3',
+               'name': 'GROUP-HOST1',
+               'type': 'networkobjectgroup',
+               'version': 'lcplbsj24ebva'},
+              {'id': '28368446-4db6-11eb-aab5-b7a83f9515f7',
+               'name': 'GROUP-HOST2',
+               'type': 'networkobjectgroup',
+               'version': 'd7fsrmu7qvlna'}],
+  'type': 'networkobjectgroup',
+  'version': 'i4oe7b4lpaxos'}
