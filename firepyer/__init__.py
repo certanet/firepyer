@@ -1,10 +1,11 @@
 import json
-from json.decoder import JSONDecodeError
-from pprint import pprint
 from time import sleep
 from datetime import datetime
+import logging
 
 import requests
+
+from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
 
 
 ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29mins in secs
@@ -35,7 +36,7 @@ class Fdm:
 
         headers = {"Accept": "application/json", 'User-Agent': 'firepyer/0.0.1'}
         if get_auth:
-            headers['Authorization'] = f'Bearer {self.check_get_access_token()}'
+            headers['Authorization'] = f'Bearer {self._check_get_access_token()}'
         if not files:
             # When sending files, requests will auto populate CT as multipart/form-data
             headers['Content-Type'] = "application/json"
@@ -46,21 +47,9 @@ class Fdm:
                                         headers=headers,
                                         verify=False,
                                         files=files)
-            pprint(response)
-            if response.status_code != 200:
-                pprint(response.status_code)
-                pprint(uri)
-                pprint(data)
-                pprint(response.text)
-                pprint(response.request.headers)
-                try:
-                    pprint(response.json())
-                except JSONDecodeError:
-                    pass
             return response
-        except Exception as e:
-            print(f"Unable to {method} request: {str(e)}")
-            return None
+        except requests.exceptions.ConnectionError:
+            raise UnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
 
     def post_api(self, uri, data=None, get_auth=True, files=None):
         return self.api_call(uri, 'POST', data=data, get_auth=get_auth, files=files)
@@ -75,20 +64,22 @@ class Fdm:
         api_alive = False
 
         while not api_alive:
-            api_status = self.api_call('#/login', 'GET', get_auth=False)
+            try:
+                api_status = self.api_call('#/login', 'GET', get_auth=False)
+            except UnreachableError:
+                api_status = None
+
             if api_status is not None:
                 if api_status.status_code == 401:
                     print('API Alive!')
                     api_alive = True
                 elif api_status.status_code == 503:
-                    print('API service unavailable...')
+                    print('FTD alive, API service unavailable...')
             else:
-                print('Unable to reach API')
-                # Exception when device is rebooted/unreachable:
-                # HTTPSConnectionPool
+                print('Unable to reach FTD')
             sleep(10)
 
-    def get_access_token(self) -> str:
+    def _get_access_token(self) -> str:
         """
         Login to FTD device and obtain an access token. The access token is required so that the user can
         connect to the device to send REST API requests.
@@ -99,17 +90,19 @@ class Fdm:
 
         payload = f'{{"grant_type": "password", "username": "{self.username}", "password": "{self.password}"}}'
         resp = self.post_api('fdm/token', payload, get_auth=False)
-        if resp is not None:
+        if resp.status_code == 400:
+            raise AuthError('Failed to authenticate against FTD - check username/password')
+        else:
             access_token = resp.json().get('access_token')
 
             epoch_now = datetime.timestamp(datetime.now())
             access_token_expiry_time = epoch_now + ACCESS_TOKEN_VALID_SECS
 
-            print(f"Login successful, access_token obtained, expires at: {datetime.fromtimestamp(access_token_expiry_time)}")
+            logging.info(f"Login successful, access_token obtained, expires at: {datetime.fromtimestamp(access_token_expiry_time)}")
 
         return access_token, access_token_expiry_time
 
-    def check_get_access_token(self) -> str:
+    def _check_get_access_token(self) -> str:
         """
         Checks if a valid (29mins hasn't passed since obtaining) access token exists, if not gets one
         :return: str Either a new or the existing valid access token
@@ -126,7 +119,7 @@ class Fdm:
             get_token = True
 
         if get_token:
-            self.access_token, self.access_token_expiry_time = self.get_access_token()
+            self.access_token, self.access_token_expiry_time = self._get_access_token()
         return self.access_token
 
     def _get_object_subset(self, obj: dict) -> dict:
@@ -268,69 +261,61 @@ class Fdm:
 
         return self.create_group(name, 'network', objects_for_group, description)
 
-    def get_pending_changes(self):
-        """
-        Sends a GET rquest to obtain the pending changes from the FTD device
-        :return: True if changes are pending, otherwise False
-        """
-        changes_found = False
-        response = self.get_api('operational/pendingchanges')
-        if response.status_code != 200:
-            print("Failed GET pending changes response {} {}".format(response.status_code, response.json()))
-        else:
-            pprint(response.json())
-            if response.json().get('items'):
-                changes_found = True
-        return changes_found
+    def get_pending_changes(self) -> list:
+        """Gets any configuration changes that have not yet been deployed
 
-    def post_deployment(self) -> str:
+        :return: List of each change to be applied, empty list if there are none
+        :rtype: list
         """
-        Send a deployment POST request
-        :return: unique id for the deployment task
+        return self.get_paged_items('operational/pendingchanges')
+
+    def deploy_now(self) -> str:
+        """Starts a deployment, regardless of if there are any pending configuration changes
+
+        :return: The ID for the Deployment task
+        :rtype: str
         """
-        deploy_id = None
-        response = self.post_api('operational/deploy')
-        if response.status_code != 200:
-            print("Failed POST deploy response {} {}".format(response.status_code, response.json()))
-        else:
-            pprint(response.json())
-            deploy_id = response.json().get('id')
-            print(deploy_id)
-        return deploy_id
+        response = self.post_api('operational/deploy').json()
+        return response.get('id')
 
     def get_deployment_status(self, deploy_id: str) -> str:
-        """
-        Wait for a deployment to complete
-        :param deploy_id: unique identifier for deployment task
-        :return: str Status name of the deployment, None if unable to get status
+        """Gets the status of a Deployment task
+
+        :param deploy_id: The ID of the Deployment task to check
+        :type deploy_id: str
+        :raises ResourceNotFound: If the deployment ID does not exist
+        :return: The status of the deployment, one of either ['QUEUED', 'DEPLOYING', DEPLOYED', 'FAILED']
+        :rtype: str
         """
         state = None
-        deploy_url = 'operational/deploy'
-        response = self.get_api(f'{deploy_url}/{deploy_id}')
-        if response.status_code != 200:
-            print("Failed GET deploy response {} {}".format(response.status_code, response.json()))
-        else:
+        response = self.get_api(f'operational/deploy/{deploy_id}')
+
+        if response.status_code == 200:
             state = response.json().get('state')
-            pprint(response.json())
-            pprint(state)
+        elif response.status_code == 404:
+            raise ResourceNotFound(f'Resource with ID "{deploy_id}" not does not exist!')
 
         return state
 
-    def deploy_policy(self):
+    def deploy_config(self):
+        """Checks if there's any pending config changes and deploys them, waits until deploy finishes to return
+
+        :return: True if deployment was successful, False is deployment failed or not required
+        :rtype: bool
+        """
         if self.get_pending_changes():
-            deployment_id = self.post_deployment()
-            if deployment_id is not None:
+            deployment_id = self.deploy_now()
+            state = self.get_deployment_status(deployment_id)
+            while state != 'DEPLOYED' and state != 'FAILED':
+                sleep(10)
                 state = self.get_deployment_status(deployment_id)
-                while state != 'DEPLOYED':
-                    # Final states should be 'FAILED' or 'DEPLOYED'
-                    sleep(10)
-                    state = self.get_deployment_status(deployment_id)
-                print('Deployment complete!')
+            if state == 'DEPLOYED':
                 return True
-            else:
-                print('Deploymentg request failed, unable to get deployment ID!')
+            elif state == 'FAILED':
+                return False
         else:
-            print('No pending changes!')
+            # Nothing to deploy
+            return False
 
     def get_vrfs(self, name='') -> list:
         """Gets all VRFs or a single VRF if a name is provided
@@ -414,7 +399,8 @@ class Fdm:
         :type af: int, optional
         :param auto_summary: Automatically summarise subnet routes to network routes, defaults to False
         :type auto_summary: bool, optional
-        :param neighbours: Neighbours to add to the BGP process, each neighbour in the list should be a dict in format {"remoteAs": "65001", "activate": True, "ipv4Address": "192.168.1.1"}, defaults to []
+        :param neighbours: Neighbours to add to the BGP process, each neighbour in the list should be a dict in format
+             {"remoteAs": "65001", "activate": True, "ipv4Address": "192.168.1.1"}, defaults to []
         :type neighbours: list, optional
         :param networks: Names of NetworkObjects to add to as networks into the BGP, defaults to []
         :type networks: list, optional
@@ -478,22 +464,6 @@ class Fdm:
         """
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
 
-    def update_interfaces(self):
-        with open('interfaces.json') as int_settings:
-            int_settings_dict = json.load(int_settings)
-
-        for interface in int_settings_dict:
-            interface_obj = self.get_interface_by_phy(interface)
-            if interface_obj is not None:
-                interface_obj['description'] = int_settings_dict[interface]['description']
-                interface_obj['ipv4']['ipAddress']['ipAddress'] = int_settings_dict[interface]['ip']
-                interface_obj['ipv4']['ipAddress']['netmask'] = int_settings_dict[interface]['netmask']
-
-                response = self.put_api(f'devices/default/interfaces/{interface_obj["id"]}',
-                                        data=json.dumps(interface_obj))
-                if response is not None:
-                    pprint(response.json())
-
     def get_dhcp_servers(self) -> list:
         return self.get_api('devicesettings/default/dhcpservercontainers').json()['items']
 
@@ -520,7 +490,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/portgroups?limit=0&', name)
         else:
-            return self.get_api('object/portgroups').json()['items']
+            return self.get_api('object/portgroups?limit=0').json()['items']
 
     def get_tcp_ports(self, name=''):
         """Gets all TCP type Ports or a single TCP Port object if a name is provided
@@ -692,7 +662,7 @@ class Fdm:
         if item_obj:
             item_list.append(item_obj)
         else:
-            print(f'{item_name} does not exist!')
+            raise ResourceNotFound(f'Resource with name "{item_name}" not does not exist!')
 
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
                            dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
@@ -721,6 +691,7 @@ class Fdm:
         :type syslog: str, optional
         :param log: Log the rule at start and end of connection, end of connection, or no log, should be one of ['BOTH', 'END', ''], defaults to ''
         :type log: str, optional
+        :raises ResourceNotFound: If any of the object names passed in cannot be found e.g. a source network or dest port has not been created
         :return: The full requests response object or None if an error occurred
         :rtype: Response|None
         """
@@ -789,8 +760,6 @@ class Fdm:
                 "syslogServer": rule_syslog,
                 "type": "accessrule"
                 }
-
-        pprint(rule)
 
         policy_id = self.get_acp()[0]['id']
         return self.post_api(f'policy/accesspolicies/{policy_id}/accessrules',
