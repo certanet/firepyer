@@ -43,7 +43,7 @@ def dicts_to_groups(objects_dict):
                 group_exists = True
             else:
                 continue
-        
+
         if not group_exists:
             group = {'name': obj['name'],
                      'objects': [obj['objects']],
@@ -61,14 +61,14 @@ def expand_merged_csv(filename):
     :rtype: list
     """
     groups = []
-    with open(in_filename) as input_file:
+    with open(filename) as input_file:
         input_file = csv.reader(input_file)
         csv_headings = next(input_file)
 
         previous_row = []
         for row in input_file:
             if any(row):
-                row = [a or b for a,b in zip_longest(row, previous_row, fillvalue='')]
+                row = [a or b for a, b in zip_longest(row, previous_row, fillvalue='')]
             previous_row = row
 
             group = {}

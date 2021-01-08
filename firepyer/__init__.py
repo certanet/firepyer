@@ -8,9 +8,6 @@ import requests
 from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
 
 
-ACCESS_TOKEN_VALID_SECS = 1740  # FDM access token lasts 30mins, this var is 29mins in secs
-
-
 class Fdm:
     def __init__(self, host, username, password):
         """Provides a connection point to an FTD device
@@ -60,6 +57,23 @@ class Fdm:
     def get_api(self, uri, data=None):
         return self.api_call(uri, 'GET', data=data)
 
+    def get_api_items(self, uri, data=None):
+        try:
+            return self.get_api(uri, data).json()['items']
+        except KeyError:
+            # No items field
+            return None
+
+    def get_api_single_item(self, uri, data=None):
+        if self.get_api_items(uri) is not None:
+            try:
+                return self.get_api_items(uri, data)[0]
+            except (IndexError, TypeError):
+                # Items list is empty or not items list
+                return None
+        else:
+            return None
+
     def check_api_status(self):
         api_alive = False
 
@@ -71,12 +85,12 @@ class Fdm:
 
             if api_status is not None:
                 if api_status.status_code == 401:
-                    print('API Alive!')
+                    logging.info('API Alive!')
                     api_alive = True
                 elif api_status.status_code == 503:
-                    print('FTD alive, API service unavailable...')
+                    logging.warn('FTD alive, API service unavailable...')
             else:
-                print('Unable to reach FTD')
+                logging.warn('Unable to reach FTD')
             sleep(10)
 
     def _get_access_token(self) -> str:
@@ -96,7 +110,8 @@ class Fdm:
             access_token = resp.json().get('access_token')
 
             epoch_now = datetime.timestamp(datetime.now())
-            access_token_expiry_time = epoch_now + ACCESS_TOKEN_VALID_SECS
+            access_token_valid_secs = 1740  # FDM access token lasts 30mins, this is 29mins
+            access_token_expiry_time = epoch_now + access_token_valid_secs
 
             logging.info(f"Login successful, access_token obtained, expires at: {datetime.fromtimestamp(access_token_expiry_time)}")
 
@@ -166,14 +181,10 @@ class Fdm:
         first_param = '?'
         if url.endswith('&'):
             first_param = ''
-        return self.get_api(f'{url}{first_param}filter={filter}').json()['items']
+        return self.get_api_single_item(f'{url}{first_param}filter={filter}')
 
     def get_obj_by_name(self, url, name):
-        obj = self.get_obj_by_filter(url, filter=f'name:{name}')
-        if obj:
-            return obj[0]
-        else:
-            return None
+        return self.get_obj_by_filter(url, filter=f'name:{name}')
 
     def get_net_objects(self, name=''):
         """Gets all NetworkObjects or a single NetworkObject if a name is provided
@@ -186,7 +197,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/networks?limit=0&', name)
         else:
-            return self.get_api('object/networks?limit=0').json()['items']
+            return self.get_api_items('object/networks?limit=0')
 
     def get_net_groups(self, name='') -> list:
         """Gets all NetworkGroups or a single NetworkGroup if a name is provided
@@ -199,7 +210,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/networkgroups?limit=0&', name)
         else:
-            return self.get_api('object/networkgroups?limit=0').json()['items']
+            return self.get_api_items('object/networkgroups?limit=0')
 
     def get_net_obj_or_grp(self, name) -> dict:
         """
@@ -328,7 +339,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('devices/default/routing/virtualrouters', name)
         else:
-            return self.get_api('devices/default/routing/virtualrouters').json()['items']
+            return self.get_api_items('devices/default/routing/virtualrouters')
 
     def get_bgp_general_settings(self):
         """Gets the device's general BGP settings if any are set
@@ -336,7 +347,7 @@ class Fdm:
         :return: The BGPGeneralSettings object or None if none are set
         :rtype: dict
         """
-        return self.get_api('devices/default/routing/bgpgeneralsettings').json()['items'][0]
+        return self.get_api_single_item('devices/default/routing/bgpgeneralsettings')
 
     def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None):
         """Set the device's general BGP settings
@@ -379,7 +390,7 @@ class Fdm:
         :rtype: dict
         """
         vrf_id = self.get_vrfs(vrf)['id']
-        return self.get_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp').json()['items'][0]
+        return self.get_api_single_item(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp')
 
     def set_bgp_settings(self, asn, name='', description=None, router_id=None, vrf='Global', af=4, auto_summary=False,
                          neighbours=[], networks=[], default_originate=False):
@@ -454,7 +465,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('devices/default/interfaces', name)
         else:
-            return self.get_api('devices/default/interfaces').json()['items']
+            return self.get_api_items('devices/default/interfaces')
 
     def get_interface_by_phy(self, phy_name: str):
         """
@@ -464,11 +475,11 @@ class Fdm:
         """
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
 
-    def get_dhcp_servers(self) -> list:
-        return self.get_api('devicesettings/default/dhcpservercontainers').json()['items']
+    def get_dhcp_servers(self) -> dict:
+        return self.get_api_single_item('devicesettings/default/dhcpservercontainers')
 
     def delete_dhcp_server_pools(self):
-        dhcp_server = self.get_dhcp_servers()[0]
+        dhcp_server = self.get_dhcp_servers()
         dhcp_server['servers'] = []
         return self.put_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
                             data=json.dumps(dhcp_server))
@@ -490,7 +501,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/portgroups?limit=0&', name)
         else:
-            return self.get_api('object/portgroups?limit=0').json()['items']
+            return self.get_api_items('object/portgroups?limit=0')
 
     def get_tcp_ports(self, name=''):
         """Gets all TCP type Ports or a single TCP Port object if a name is provided
@@ -503,7 +514,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/tcpports?limit=0&', name)
         else:
-            return self.get_api('object/tcpports?limit=0').json()['items']
+            return self.get_api_items('object/tcpports?limit=0')
 
     def get_udp_ports(self, name=''):
         """Gets all UDP type Ports or a single UDP Port object if a name is provided
@@ -516,7 +527,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/udpports?limit=0&', name)
         else:
-            return self.get_api('object/udpports?limit=0').json()['items']
+            return self.get_api_items('object/udpports?limit=0')
 
     def get_port_obj_or_grp(self, name) -> dict:
         """
@@ -566,12 +577,11 @@ class Fdm:
 
         return self.create_group(name, 'port', objects_for_group, description)
 
-    def get_initial_provision(self) -> list:
-        return self.get_api('/devices/default/action/provision').json()['items']
+    def get_initial_provision(self) -> dict:
+        return self.get_api_single_item('/devices/default/action/provision')
 
     def set_initial_provision(self, new_password, current_password='Admin123'):
-        get_provis = self.get_initial_provision()
-        provision = get_provis[0]
+        provision = self.get_initial_provision()
         provision["acceptEULA"] = True
         provision["currentPassword"] = current_password
         provision["newPassword"] = new_password
@@ -582,7 +592,7 @@ class Fdm:
                              data=json.dumps(provision))
 
     def get_hostname_obj(self) -> dict:
-        return self.get_api('devicesettings/default/devicehostnames').json()['items'][0]
+        return self.get_api_single_item('devicesettings/default/devicehostnames')
 
     def get_hostname(self) -> str:
         return self.get_hostname_obj()['hostname']
@@ -621,7 +631,7 @@ class Fdm:
         if name:
             return self.get_obj_by_name('object/securityzones?limit=0&', name)
         else:
-            return self.get_api('object/securityzones?limit=0').json()['items']
+            return self.get_api_items('object/securityzones?limit=0')
 
     def create_security_zone(self, name, description='', interfaces=[], phy_interfaces=[], mode='ROUTED'):
         """
@@ -652,10 +662,10 @@ class Fdm:
         return self.post_api('object/securityzones', json.dumps(zone_object))
 
     def get_acp(self):
-        return self.get_api('policy/accesspolicies').json()['items']
+        return self.get_api_single_item('policy/accesspolicies')
 
     def get_access_rules(self):
-        policy_id = self.get_acp()[0]['id']
+        policy_id = self.get_acp()['id']
         return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
 
     def add_rule_item(self, item_name, item_obj, item_list):
@@ -761,12 +771,12 @@ class Fdm:
                 "type": "accessrule"
                 }
 
-        policy_id = self.get_acp()[0]['id']
+        policy_id = self.get_acp()['id']
         return self.post_api(f'policy/accesspolicies/{policy_id}/accessrules',
                              data=json.dumps(rule))
 
     def get_smartlicense(self):
-        return self.get_api('license/smartlicenses').json()['items']
+        return self.get_api_items('license/smartlicenses')
 
     def set_smartlicense(self, license_type):
         """
@@ -786,14 +796,14 @@ class Fdm:
         if name:
             return self.get_obj_by_name('policy/intrusionpolicies', name)
         else:
-            return self.get_api('policy/`intrusionpolicies').json()['items']
+            return self.get_api_items('policy/`intrusionpolicies')
 
     def get_syslog_servers(self, name=''):
         if name:
             # Syslog server names are stored as IP:PORT, so unable to query using URL filter
             return self.get_class_by_name(self.get_syslog_servers(), name)
         else:
-            return self.get_api('object/syslogalerts?limit=0').json()['items']
+            return self.get_api_items('object/syslogalerts?limit=0')
 
     def set_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
         """
