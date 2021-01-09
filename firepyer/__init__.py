@@ -8,7 +8,7 @@ import requests
 from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 class Fdm:
@@ -314,7 +314,7 @@ class Fdm:
     def deploy_config(self):
         """Checks if there's any pending config changes and deploys them, waits until deploy finishes to return
 
-        :return: True if deployment was successful, False is deployment failed or not required
+        :return: True if deployment was successful, False if deployment failed or not required
         :rtype: bool
         """
         if self.get_pending_changes():
@@ -628,6 +628,11 @@ class Fdm:
         return self.post_api('action/upgrade')
 
     def get_system_info(self) -> dict:
+        """Gets system information such as software versions, device model, serial number and management details
+
+        :return: The target FTD system information
+        :rtype: dict
+        """
         return self.get_api('/operational/systeminfo/default').json()
 
     def get_security_zones(self, name=''):
