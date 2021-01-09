@@ -10,7 +10,7 @@ as variables, that can be used in Access Policy rules etc.
 .. class:: Fdm
    :noindex:
 
-   .. automethod:: create_network_group
+   .. automethod:: create_net_group
    .. automethod:: get_net_groups
    .. fp_output:: get_net_groups
    .. fp_output:: get_net_groups_params

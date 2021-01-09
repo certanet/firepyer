@@ -15,17 +15,19 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('.'))
 
+from firepyer import __version__
+
 
 # -- Project information -----------------------------------------------------
 
 project = 'Firepyer'
 copyright = '2021, Marcus Cockerill, Certa Networks'
-author = 'Certa Networks'
+author = 'Marcus Cockerill'
 
 # The short X.Y version.
-version = '0.0.1'
+version = __version__
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

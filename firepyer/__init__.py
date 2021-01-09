@@ -8,6 +8,9 @@ import requests
 from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
 
 
+__version__ = '0.0.1'
+
+
 class Fdm:
     def __init__(self, host, username, password):
         """Provides a connection point to an FTD device
@@ -31,7 +34,7 @@ class Fdm:
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
 
-        headers = {"Accept": "application/json", 'User-Agent': 'firepyer/0.0.1'}
+        headers = {"Accept": "application/json", 'User-Agent': f'firepyer/{__version__}'}
         if get_auth:
             headers['Authorization'] = f'Bearer {self._check_get_access_token()}'
         if not files:
@@ -199,7 +202,7 @@ class Fdm:
         else:
             return self.get_api_items('object/networks?limit=0')
 
-    def get_net_groups(self, name='') -> list:
+    def get_net_groups(self, name=''):
         """Gets all NetworkGroups or a single NetworkGroup if a name is provided
 
         :param name: The name of a NetworkGroup to find, defaults to ''
@@ -254,7 +257,7 @@ class Fdm:
 
         return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
 
-    def create_network_group(self, name: str, objects: list, description: str = None):
+    def create_net_group(self, name: str, objects: list, description: str = None):
         """Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
 
         :param name: Name of the NetworkGroup to be created
@@ -328,7 +331,7 @@ class Fdm:
             # Nothing to deploy
             return False
 
-    def get_vrfs(self, name='') -> list:
+    def get_vrfs(self, name=''):
         """Gets all VRFs or a single VRF if a name is provided
 
         :param name: The name of a VRF to find, defaults to ''

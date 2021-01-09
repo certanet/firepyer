@@ -26,8 +26,10 @@ The intended usage is to replace some of the tedious clicking tasks from the GUI
 .. toctree::
    :maxdepth: 1
    :caption: Misc:
+   :hidden:
 
    utils
+   change
 
 
 * :ref:`genindex`

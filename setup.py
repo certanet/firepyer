@@ -1,11 +1,13 @@
 import setuptools
 
+from firepyer import __version__
+
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="firepyer",
-    version="0.0.1",
+    version=__version__,
     author="Marcus Cockerill",
     author_email="marcus@certa.network",
     description="Interacting with Cisco FTD devices via the FDM REST API in Python",
