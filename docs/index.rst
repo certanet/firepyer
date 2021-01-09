@@ -16,12 +16,12 @@ The intended usage is to replace some of the tedious clicking tasks from the GUI
    :maxdepth: 1
    :caption: Features:
 
-   access_rules
    deployments
    networks
    ports
    routing
-   system
+   policies
+   System <system>
 
 
 .. toctree::

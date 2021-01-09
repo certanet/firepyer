@@ -488,10 +488,20 @@ class Fdm:
                             data=json.dumps(dhcp_server))
 
     def send_command(self, cmd: str):
+        """Send a CLI command to the FTD device and return the output
+
+        :param cmd: The full command to be sent to the CLI, abbreviations aren't support
+        :type cmd: str
+        :return: The output from entering the command or None if the command failed
+        :rtype: str
+        """
         cmd_body = {"commandInput": cmd,
                     "type": "Command"}
-        return self.post_api('action/command',
-                             data=json.dumps(cmd_body)).json()
+        response = self.post_api('action/command', data=json.dumps(cmd_body))
+        if response.status_code == 200:
+            return response.json()['commandOutput']
+        else:
+            return None
 
     def get_port_groups(self, name=''):
         """Gets all PortGroups or a single PortGroup if a name is provided
@@ -598,9 +608,21 @@ class Fdm:
         return self.get_api_single_item('devicesettings/default/devicehostnames')
 
     def get_hostname(self) -> str:
+        """Get the hostname of the system
+
+        :return: The hostname
+        :rtype: str
+        """
         return self.get_hostname_obj()['hostname']
 
     def set_hostname(self, hostname):
+        """Sets the hostname of the system
+
+        :param hostname: The hostname to set
+        :type hostname: str
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
+        """
         current_hostname = self.get_hostname_obj()
         hostname_id = current_hostname['id']
         new_hostname = {"hostname": hostname,
@@ -672,9 +694,20 @@ class Fdm:
     def get_acp(self):
         return self.get_api_single_item('policy/accesspolicies')
 
-    def get_access_rules(self):
+    def get_access_rules(self, name=''):
+        """Gets all AccessRules or a single AccessRule if a name is provided
+
+        :param name: The name of the AccessRule to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all AccessRules if no name is provided, or a dict of the single AccessRules with the given name
+        :rtype: list|dict
+        """
         policy_id = self.get_acp()['id']
-        return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
+        if name:
+            # Access rules cannot be filtered by name via the API so use get_class_by_name instead:
+            return self.get_class_by_name(self.get_access_rules(), name)
+        else:
+            return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
 
     def add_rule_item(self, item_name, item_obj, item_list):
         if item_obj:
@@ -801,26 +834,45 @@ class Fdm:
                              data=json.dumps(license_object)).json()
 
     def get_intrusion_policies(self, name=''):
+        """Gets all IntrusionPolicies or a single IntrusionPolicy if a name is provided
+
+        :param name: The name of the IntrusionPolicy to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all IntrusionPolicies if no name is provided, or a dict of the single IntrusionPolicy with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('policy/intrusionpolicies', name)
         else:
-            return self.get_api_items('policy/`intrusionpolicies')
+            return self.get_api_items('policy/intrusionpolicies')
 
     def get_syslog_servers(self, name=''):
+        """Gets all SyslogServers or a single SyslogServer if a name is provided
+
+        :param name: The name of the SyslogServer to find. The name is stored in the format IP:PORT, defaults to ''
+        :type name: str, optional
+        :return: A list of all SyslogServers if no name is provided, or a dict of the single SyslogServer with the given name
+        :rtype: list|dict
+        """
         if name:
             # Syslog server names are stored as IP:PORT, so unable to query using URL filter
             return self.get_class_by_name(self.get_syslog_servers(), name)
         else:
             return self.get_api_items('object/syslogalerts?limit=0')
 
-    def set_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
-        """
-        Creates a syslog server to be able to send logs to
-        :param ip: str The syslog server IP
-        :param protocol: str The protocol used to send syslog messages, must be one of ['TCP', 'UDP']
-        :param port: str The port number used to send syslog messages
-        :param interface: str Optionally specify a data interface name to use as the source when sending syslog messages, otherwise mgmt will be used
-        :return: dict The new SyslogServer object, or the error message from the JSON response
+    def create_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
+        """Creates a SyslogServer to be able to send access rule and system logs to
+
+        :param ip: IP address of the syslog server
+        :type ip: str
+        :param protocol: Protocol used to send syslog messages, must be one of ['TCP', 'UDP'], defaults to 'UDP'
+        :type protocol: str, optional
+        :param port: Port number used to send syslog messages, defaults to '514'
+        :type port: str, optional
+        :param interface: Name of a data interface to use as the source to reach the syslog server IP, otherwise mgmt will be used, defaults to None
+        :type interface: str, optional
+        :return: The new SyslogServer object
+        :rtype: dict
         """
         use_mgmt = True
         interface_object = None
