@@ -10,6 +10,7 @@ setuptools.setup(
     version=__version__,
     author="Marcus Cockerill",
     author_email="marcus@certa.network",
+    license="Apache License 2.0",
     description="Interacting with Cisco FTD devices via the FDM REST API in Python",
     keywords='cisco firepower fdm ftd rest api python',
     long_description=long_description,
@@ -20,7 +21,7 @@ setuptools.setup(
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',

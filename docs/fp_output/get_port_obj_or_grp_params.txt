@@ -1,0 +1,11 @@
+'BIG6'
+
+{'description': 'A very large ICMPv6',
+ 'icmpv6Code': None,
+ 'icmpv6Type': 'PACKET_TOO_BIG',
+ 'id': '10d19dae-5458-11eb-aab5-e946ff8eb526',
+ 'isSystemDefined': False,
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/icmpv6ports/10d19dae-5458-11eb-aab5-e946ff8eb526'},
+ 'name': 'BIG6',
+ 'type': 'icmpv6portobject',
+ 'version': 'lrerbmosmioew'}

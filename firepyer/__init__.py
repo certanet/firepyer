@@ -8,7 +8,7 @@ import requests
 from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 class Fdm:
@@ -216,19 +216,23 @@ class Fdm:
             return self.get_api_items('object/networkgroups?limit=0')
 
     def get_net_obj_or_grp(self, name) -> dict:
+        """Get a NetworkObject or NetworkGroup by the given name
+
+        :param name: The name of the object/group to retrieve
+        :type name: str
+        :return: Single dict describing the object, if a resource with the name is found
+        :rtype: dict
         """
-        Get a network object or network group by the given name
-        :param name: str The name of the object/group to find
-        :return: dict Contains a single dict for the object of the resource, if found
-        """
-        net = self.get_net_objects(name=name)
-        if net:
-            return net
-        else:
-            net = self.get_net_groups(name=name)
+        net = None
+        name_filter = {'name': name}
+        net_finders = [self.get_net_objects,
+                       self.get_net_groups]
+
+        for get_net_method in net_finders:
+            net = get_net_method(**name_filter)
             if net:
-                return net
-        return None
+                break
+        return net
 
     def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
 
@@ -314,7 +318,7 @@ class Fdm:
     def deploy_config(self):
         """Checks if there's any pending config changes and deploys them, waits until deploy finishes to return
 
-        :return: True if deployment was successful, False is deployment failed or not required
+        :return: True if deployment was successful, False if deployment failed or not required
         :rtype: bool
         """
         if self.get_pending_changes():
@@ -479,6 +483,11 @@ class Fdm:
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
 
     def get_dhcp_servers(self) -> dict:
+        """Gets the DHCP server configuration, including any pools
+
+        :return: The DHCP server container object for all DHCP settings
+        :rtype: dict
+        """
         return self.get_api_single_item('devicesettings/default/dhcpservercontainers')
 
     def delete_dhcp_server_pools(self):
@@ -488,10 +497,20 @@ class Fdm:
                             data=json.dumps(dhcp_server))
 
     def send_command(self, cmd: str):
+        """Send a CLI command to the FTD device and return the output
+
+        :param cmd: The full command to be sent to the CLI, abbreviations aren't supported
+        :type cmd: str
+        :return: The output from entering the command or None if the command failed
+        :rtype: str
+        """
         cmd_body = {"commandInput": cmd,
                     "type": "Command"}
-        return self.post_api('action/command',
-                             data=json.dumps(cmd_body)).json()
+        response = self.post_api('action/command', data=json.dumps(cmd_body))
+        if response.status_code == 200:
+            return response.json()['commandOutput']
+        else:
+            return None
 
     def get_port_groups(self, name=''):
         """Gets all PortGroups or a single PortGroup if a name is provided
@@ -532,47 +551,103 @@ class Fdm:
         else:
             return self.get_api_items('object/udpports?limit=0')
 
-    def get_port_obj_or_grp(self, name) -> dict:
-        """
-        Get a Port (tcp/udp) object or PortGroup by the given name
-        :param name: str The name of the object/group to find
-        :return: dict Contains a single dict for the object of the resource, if found
-        """
+    def get_icmp_ports(self, name='', af='4'):
+        """Gets all ICMPv4/6 type Ports or a single ICMPv4/6 Port object if a name is provided
 
-        port = self.get_tcp_ports(name=name)
-        if port:
-            return port
+        :param name: The name of a ICMPv4 Port to find, defaults to ''
+        :type name: str, optional
+        :param af: Address family, '4' for an ICMPv4 object, '6' for an ICMPv6 object, defaults to '4'
+        :type af: str, optional
+        :return: A list of all ICMPv4 Ports if no name is provided, or a dict of the single ICMPv4 Port with the given name
+        :rtype: list|dict
+        """
+        if name:
+            return self.get_obj_by_name(f'object/icmpv{af}ports?limit=0&', name)
         else:
-            port = self.get_udp_ports(name=name)
+            return self.get_api_items(f'object/icmpv{af}ports?limit=0')
+
+    def create_icmp_port(self, name, type, code=None, af='4', description=None):
+        """Create an ICMPv4/6 Port object
+
+        :param name: Name of the object
+        :type name: str
+        :param type: Must be a valid ICMPv4 or ICMPv6 type, see enum for options
+        :type type: str
+        :param code: Must be a valid ICMPv4 or ICMPv6 code, see enum for options, defaults to None
+        :type code: str, optional
+        :param af: Address family, '4' for an ICMPv4 object, '6' for an ICMPv6 object, defaults to '4'
+        :type af: str, optional
+        :param description: Description for the Port object, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
+        """
+        if code:
+            code = code.upper()
+
+        icmp_object = {'description': description,
+                       f'icmpv{af}Code': code,
+                       f'icmpv{af}Type': type.upper(),
+                       'name': name,
+                       'type': f'icmpv{af}portobject'}
+
+        return self.post_api(f'object/icmpv{af}ports', json.dumps(icmp_object))
+
+    def get_port_obj_or_grp(self, name) -> dict:
+        """Get a Port (tcp/udp/icmpv4/icmpv6) object or PortGroup by the given name
+
+        :param name: Name of the object/group to find
+        :type name: str
+        :return: Single dict describing the object, if a resource with the name is found
+        :rtype: dict
+        """
+        port = None
+        name_filter = {'name': name}
+        port_finders = {self.get_tcp_ports: {},
+                        self.get_udp_ports: {},
+                        self.get_port_groups: {},
+                        self.get_icmp_ports: {'af': '4'},
+                        self.get_icmp_ports: {'af': '6'}}
+
+        for get_port_method in port_finders:
+            port_finders[get_port_method].update(name_filter)
+            port = get_port_method(**port_finders[get_port_method])
             if port:
-                return port
-            else:
-                port = self.get_port_groups(name=name)
-                if port:
-                    return port
-        return None
+                break
+        return port
 
     def create_port_object(self, name: str, port: str, type: str, description: str = None):
-        """
-        Creates a Port object
-        :param name: str The name of the Port object
-        :param port: str A single port number or '-' separated range of ports e.g. 80 or 8000-8008
-        :param type: str The protocol, either tcp or udp
-        :param description: str A description for the Port
+        """Create a TCP or UDP Port object to use in access rules
+
+        :param name: Name of the Port object to be created
+        :type name: str
+        :param port: A single port number or '-' separated range of ports e.g. '80' or '8000-8008'
+        :type port: str
+        :param type: The protocol, must be one of ['tcp', 'udp']
+        :type type: str
+        :param description: A description for the Port, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
         """
         port_object = {"name": name,
                        "description": description,
                        "port": port,
-                       "type": f"{type}portobject"
+                       "type": f"{type.lower()}portobject"
                        }
-        return self.post_api(f'object/{type}ports', json.dumps(port_object))
+        return self.post_api(f'object/{type.lower()}ports', json.dumps(port_object))
 
     def create_port_group(self, name: str, objects: list, description: str = None):
-        """
-        Creates a PortGroup object, containing at least 1 tcp/udp Port or an existing PortGroup
-        :param name: str Name of the PortGroup
-        :param objects: [str] Names of the tcp/udp Port or PortGroup objects to be added to the group
-        :param description: str A description for the PortGroup
+        """Creates a PortGroup object, containing at least one existing tcp/udp/icmp Port or PortGroup
+
+        :param name: Name of the PortGroup to create
+        :type name: str
+        :param objects: Names of the tcp/udp/icmp Port or PortGroup objects to be added to the group
+        :type objects: list
+        :param description: A description for the PortGroup, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
         """
         objects_for_group = []
         for obj_name in objects:
@@ -598,9 +673,21 @@ class Fdm:
         return self.get_api_single_item('devicesettings/default/devicehostnames')
 
     def get_hostname(self) -> str:
+        """Get the hostname of the system
+
+        :return: The hostname
+        :rtype: str
+        """
         return self.get_hostname_obj()['hostname']
 
     def set_hostname(self, hostname):
+        """Sets the hostname of the system
+
+        :param hostname: The hostname to set
+        :type hostname: str
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
+        """
         current_hostname = self.get_hostname_obj()
         hostname_id = current_hostname['id']
         new_hostname = {"hostname": hostname,
@@ -628,6 +715,11 @@ class Fdm:
         return self.post_api('action/upgrade')
 
     def get_system_info(self) -> dict:
+        """Gets system information such as software versions, device model, serial number and management details
+
+        :return: The target FTD system information
+        :rtype: dict
+        """
         return self.get_api('/operational/systeminfo/default').json()
 
     def get_security_zones(self, name=''):
@@ -667,9 +759,20 @@ class Fdm:
     def get_acp(self):
         return self.get_api_single_item('policy/accesspolicies')
 
-    def get_access_rules(self):
+    def get_access_rules(self, name=''):
+        """Gets all AccessRules or a single AccessRule if a name is provided
+
+        :param name: The name of the AccessRule to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all AccessRules if no name is provided, or a dict of the single AccessRules with the given name
+        :rtype: list|dict
+        """
         policy_id = self.get_acp()['id']
-        return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
+        if name:
+            # Access rules cannot be filtered by name via the API so use get_class_by_name instead:
+            return self.get_class_by_name(self.get_access_rules(), name)
+        else:
+            return self.get_paged_items(f'policy/accesspolicies/{policy_id}/accessrules')
 
     def add_rule_item(self, item_name, item_obj, item_list):
         if item_obj:
@@ -796,26 +899,45 @@ class Fdm:
                              data=json.dumps(license_object)).json()
 
     def get_intrusion_policies(self, name=''):
+        """Gets all IntrusionPolicies or a single IntrusionPolicy if a name is provided
+
+        :param name: The name of the IntrusionPolicy to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all IntrusionPolicies if no name is provided, or a dict of the single IntrusionPolicy with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('policy/intrusionpolicies', name)
         else:
-            return self.get_api_items('policy/`intrusionpolicies')
+            return self.get_api_items('policy/intrusionpolicies')
 
     def get_syslog_servers(self, name=''):
+        """Gets all SyslogServers or a single SyslogServer if a name is provided
+
+        :param name: The name of the SyslogServer to find. The name is stored in the format IP:PORT, defaults to ''
+        :type name: str, optional
+        :return: A list of all SyslogServers if no name is provided, or a dict of the single SyslogServer with the given name
+        :rtype: list|dict
+        """
         if name:
             # Syslog server names are stored as IP:PORT, so unable to query using URL filter
             return self.get_class_by_name(self.get_syslog_servers(), name)
         else:
             return self.get_api_items('object/syslogalerts?limit=0')
 
-    def set_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
-        """
-        Creates a syslog server to be able to send logs to
-        :param ip: str The syslog server IP
-        :param protocol: str The protocol used to send syslog messages, must be one of ['TCP', 'UDP']
-        :param port: str The port number used to send syslog messages
-        :param interface: str Optionally specify a data interface name to use as the source when sending syslog messages, otherwise mgmt will be used
-        :return: dict The new SyslogServer object, or the error message from the JSON response
+    def create_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
+        """Creates a SyslogServer to be able to send access rule and system logs to
+
+        :param ip: IP address of the syslog server
+        :type ip: str
+        :param protocol: Protocol used to send syslog messages, must be one of ['TCP', 'UDP'], defaults to 'UDP'
+        :type protocol: str, optional
+        :param port: Port number used to send syslog messages, defaults to '514'
+        :type port: str, optional
+        :param interface: Name of a data interface to use as the source to reach the syslog server IP, otherwise mgmt will be used, defaults to None
+        :type interface: str, optional
+        :return: The new SyslogServer object
+        :rtype: dict
         """
         use_mgmt = True
         interface_object = None

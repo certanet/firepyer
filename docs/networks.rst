@@ -17,3 +17,5 @@ as variables, that can be used in Access Policy rules etc.
    .. automethod:: get_net_objects
    .. fp_output:: get_net_objects
    .. fp_output:: get_net_objects_params
+   .. automethod:: get_net_obj_or_grp
+   .. fp_output:: get_net_obj_or_grp_params

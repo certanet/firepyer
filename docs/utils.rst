@@ -2,7 +2,7 @@ Utilities
 =========
 A few general utilites for working with the API and it's objects, such as importing data from CSV files.
 
-.. py:currentmodule:: firepyer.utils
+.. module:: firepyer.utils
 
 .. autofunction:: read_objects_csv
 
