@@ -490,7 +490,7 @@ class Fdm:
     def send_command(self, cmd: str):
         """Send a CLI command to the FTD device and return the output
 
-        :param cmd: The full command to be sent to the CLI, abbreviations aren't support
+        :param cmd: The full command to be sent to the CLI, abbreviations aren't supported
         :type cmd: str
         :return: The output from entering the command or None if the command failed
         :rtype: str
@@ -541,6 +541,46 @@ class Fdm:
             return self.get_obj_by_name('object/udpports?limit=0&', name)
         else:
             return self.get_api_items('object/udpports?limit=0')
+
+    def get_icmp_ports(self, name=''):
+        """Gets all ICMPv4 type Ports or a single ICMPv4 Port object if a name is provided
+
+        :param name: The name of a ICMPv4 Port to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all ICMPv4 Ports if no name is provided, or a dict of the single ICMPv4 Port with the given name
+        :rtype: list|dict
+        """
+        if name:
+            return self.get_obj_by_name('object/icmpv4ports?limit=0&', name)
+        else:
+            return self.get_api_items('object/icmpv4ports?limit=0')
+
+    def create_icmp_port(self, name, type, code=None, af='4', description=None):
+        """Create an ICMPv4/6 Port object
+
+        :param name: Name of the object
+        :type name: str
+        :param type: Must be a valid ICMPv4 or ICMPv6 type, see enum for options
+        :type type: str
+        :param code: Must be a valid ICMPv4 or ICMPv6 code, see enum for options, defaults to None
+        :type code: str, optional
+        :param af: Address family, '4' for an ICMPv4 object, '6' for an ICMPv6 object, defaults to '4'
+        :type af: str, optional
+        :param description: Description for the Port object, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
+        """
+        if code:
+            code = code.upper()
+
+        icmp_object = {'description': description,
+                       f'icmpv{af}Code': code,
+                       f'icmpv{af}Type': type.upper(),
+                       'name': name,
+                       'type': f'icmpv{af}portobject'}
+
+        return self.post_api(f'object/icmpv{af}ports', json.dumps(icmp_object))
 
     def get_port_obj_or_grp(self, name) -> dict:
         """
