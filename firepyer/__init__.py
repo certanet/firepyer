@@ -216,19 +216,23 @@ class Fdm:
             return self.get_api_items('object/networkgroups?limit=0')
 
     def get_net_obj_or_grp(self, name) -> dict:
+        """Get a NetworkObject or NetworkGroup by the given name
+
+        :param name: The name of the object/group to retrieve
+        :type name: str
+        :return: Single dict describing the object, if a resource with the name is found
+        :rtype: dict
         """
-        Get a network object or network group by the given name
-        :param name: str The name of the object/group to find
-        :return: dict Contains a single dict for the object of the resource, if found
-        """
-        net = self.get_net_objects(name=name)
-        if net:
-            return net
-        else:
-            net = self.get_net_groups(name=name)
+        net = None
+        name_filter = {'name': name}
+        net_finders = [self.get_net_objects,
+                       self.get_net_groups]
+
+        for get_net_method in net_finders:
+            net = get_net_method(**name_filter)
             if net:
-                return net
-        return None
+                break
+        return net
 
     def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
 
@@ -479,6 +483,11 @@ class Fdm:
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
 
     def get_dhcp_servers(self) -> dict:
+        """Gets the DHCP server configuration, including any pools
+
+        :return: The DHCP server container object for all DHCP settings
+        :rtype: dict
+        """
         return self.get_api_single_item('devicesettings/default/dhcpservercontainers')
 
     def delete_dhcp_server_pools(self):
@@ -542,18 +551,20 @@ class Fdm:
         else:
             return self.get_api_items('object/udpports?limit=0')
 
-    def get_icmp_ports(self, name=''):
-        """Gets all ICMPv4 type Ports or a single ICMPv4 Port object if a name is provided
+    def get_icmp_ports(self, name='', af='4'):
+        """Gets all ICMPv4/6 type Ports or a single ICMPv4/6 Port object if a name is provided
 
         :param name: The name of a ICMPv4 Port to find, defaults to ''
         :type name: str, optional
+        :param af: Address family, '4' for an ICMPv4 object, '6' for an ICMPv6 object, defaults to '4'
+        :type af: str, optional
         :return: A list of all ICMPv4 Ports if no name is provided, or a dict of the single ICMPv4 Port with the given name
         :rtype: list|dict
         """
         if name:
-            return self.get_obj_by_name('object/icmpv4ports?limit=0&', name)
+            return self.get_obj_by_name(f'object/icmpv{af}ports?limit=0&', name)
         else:
-            return self.get_api_items('object/icmpv4ports?limit=0')
+            return self.get_api_items(f'object/icmpv{af}ports?limit=0')
 
     def create_icmp_port(self, name, type, code=None, af='4', description=None):
         """Create an ICMPv4/6 Port object
@@ -583,46 +594,60 @@ class Fdm:
         return self.post_api(f'object/icmpv{af}ports', json.dumps(icmp_object))
 
     def get_port_obj_or_grp(self, name) -> dict:
-        """
-        Get a Port (tcp/udp) object or PortGroup by the given name
-        :param name: str The name of the object/group to find
-        :return: dict Contains a single dict for the object of the resource, if found
-        """
+        """Get a Port (tcp/udp/icmpv4/icmpv6) object or PortGroup by the given name
 
-        port = self.get_tcp_ports(name=name)
-        if port:
-            return port
-        else:
-            port = self.get_udp_ports(name=name)
+        :param name: Name of the object/group to find
+        :type name: str
+        :return: Single dict describing the object, if a resource with the name is found
+        :rtype: dict
+        """
+        port = None
+        name_filter = {'name': name}
+        port_finders = {self.get_tcp_ports: {},
+                        self.get_udp_ports: {},
+                        self.get_port_groups: {},
+                        self.get_icmp_ports: {'af': '4'},
+                        self.get_icmp_ports: {'af': '6'}}
+
+        for get_port_method in port_finders:
+            port_finders[get_port_method].update(name_filter)
+            port = get_port_method(**port_finders[get_port_method])
             if port:
-                return port
-            else:
-                port = self.get_port_groups(name=name)
-                if port:
-                    return port
-        return None
+                break
+        return port
 
     def create_port_object(self, name: str, port: str, type: str, description: str = None):
-        """
-        Creates a Port object
-        :param name: str The name of the Port object
-        :param port: str A single port number or '-' separated range of ports e.g. 80 or 8000-8008
-        :param type: str The protocol, either tcp or udp
-        :param description: str A description for the Port
+        """Create a TCP or UDP Port object to use in access rules
+
+        :param name: Name of the Port object to be created
+        :type name: str
+        :param port: A single port number or '-' separated range of ports e.g. '80' or '8000-8008'
+        :type port: str
+        :param type: The protocol, must be one of ['tcp', 'udp']
+        :type type: str
+        :param description: A description for the Port, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
         """
         port_object = {"name": name,
                        "description": description,
                        "port": port,
-                       "type": f"{type}portobject"
+                       "type": f"{type.lower()}portobject"
                        }
-        return self.post_api(f'object/{type}ports', json.dumps(port_object))
+        return self.post_api(f'object/{type.lower()}ports', json.dumps(port_object))
 
     def create_port_group(self, name: str, objects: list, description: str = None):
-        """
-        Creates a PortGroup object, containing at least 1 tcp/udp Port or an existing PortGroup
-        :param name: str Name of the PortGroup
-        :param objects: [str] Names of the tcp/udp Port or PortGroup objects to be added to the group
-        :param description: str A description for the PortGroup
+        """Creates a PortGroup object, containing at least one existing tcp/udp/icmp Port or PortGroup
+
+        :param name: Name of the PortGroup to create
+        :type name: str
+        :param objects: Names of the tcp/udp/icmp Port or PortGroup objects to be added to the group
+        :type objects: list
+        :param description: A description for the PortGroup, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
         """
         objects_for_group = []
         for obj_name in objects:
