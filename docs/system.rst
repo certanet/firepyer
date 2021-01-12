@@ -1,5 +1,5 @@
-System Settings
-===============
+System Settings & Tasks
+=======================
 
 General system settings.
 
@@ -10,6 +10,8 @@ General system settings.
    :noindex:
 
    .. automethod:: create_syslog_server
+   .. automethod:: get_dhcp_servers
+   .. fp_output:: get_dhcp_servers
    .. automethod:: get_hostname
    .. automethod:: get_syslog_servers
    .. fp_output:: get_syslog_servers
