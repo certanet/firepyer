@@ -8,7 +8,7 @@ import requests
 from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class Fdm:
@@ -469,6 +469,13 @@ class Fdm:
                              json.dumps(bgp_settings))
 
     def get_interfaces(self, name=''):
+        """Gets all Interfaces or a single Interface if a name is provided
+
+        :param name: The name of the Interface to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all Interfaces if no name is provided, or a dict of the single Interface with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('devices/default/interfaces', name)
         else:
@@ -723,6 +730,13 @@ class Fdm:
         return self.get_api('/operational/systeminfo/default').json()
 
     def get_security_zones(self, name=''):
+        """Gets all SecurityZones or a single SecurityZone if a name is provided
+
+        :param name: The name of the SecurityZone to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all SecurityZones if no name is provided, or a dict of the single SecurityZone with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/securityzones?limit=0&', name)
         else:
@@ -737,7 +751,6 @@ class Fdm:
         :param phy_interfaces: list The physical names of any Interfaces to be part of this Security Zone e.g. GigabitEthernet0/0
         :param mode: str The mode of the Security Zone, either ROUTED or PASSIVE
         """
-
         zone_interfaces = []
 
         for intf in phy_interfaces:
