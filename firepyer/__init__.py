@@ -663,7 +663,7 @@ class Fdm:
         return self.create_group(name, 'port', objects_for_group, description)
 
     def get_initial_provision(self) -> dict:
-        return self.get_api_single_item('/devices/default/action/provision')
+        return self.get_api_single_item('devices/default/action/provision')
 
     def set_initial_provision(self, new_password, current_password='Admin123'):
         provision = self.get_initial_provision()
@@ -673,7 +673,7 @@ class Fdm:
         provision.pop('links')
         provision.pop('version')
 
-        return self.post_api('/devices/default/action/provision',
+        return self.post_api('devices/default/action/provision',
                              data=json.dumps(provision))
 
     def get_hostname_obj(self) -> dict:
@@ -727,7 +727,7 @@ class Fdm:
         :return: The target FTD system information
         :rtype: dict
         """
-        return self.get_api('/operational/systeminfo/default').json()
+        return self.get_api('operational/systeminfo/default').json()
 
     def get_security_zones(self, name=''):
         """Gets all SecurityZones or a single SecurityZone if a name is provided
