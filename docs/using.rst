@@ -11,10 +11,10 @@ Authentication is taken care of transparently when calling a method, so this doe
 
 .. autoclass:: Fdm
 
-Import the Fdm class and instantiate an object, passing in your FTD hostname/IP, username and password:
+Import the Fdm class and instantiate an object, passing in your FTD hostname/IP, username and password (and ignoring SSL verification if using a self-signed cert):
 
     >>> from firepyer import Fdm
-    >>> fdm = Fdm(host='192.168.45.45', username='admin', password='Admin123')
+    >>> fdm = Fdm(host='192.168.45.45', username='admin', password='Admin123', verify=False)
 
 Then call any of the available methods to run against your FTD:
 
