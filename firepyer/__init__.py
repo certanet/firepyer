@@ -12,7 +12,7 @@ __version__ = '0.0.3'
 
 
 class Fdm:
-    def __init__(self, host, username, password):
+    def __init__(self, host, username, password, verify=True):
         """Provides a connection point to an FTD device
 
         :param host: The IP or hostname of the FTD device
@@ -27,6 +27,9 @@ class Fdm:
         self.password = password
         self.access_token = None
         self.access_token_expiry_time = None
+        self.verify = verify
+        if not verify:
+            requests.packages.urllib3.disable_warnings()
 
     def api_call(self, uri, method, data=None, get_auth=True, files=None):
         # Check for http allows passing in full URL e.g. from pagination next page link
@@ -44,10 +47,13 @@ class Fdm:
             response = requests.request(method, uri,
                                         data=data,
                                         headers=headers,
+                                        verify=self.verify,
                                         files=files)
             if response.status_code == 500:
                 raise RuntimeError
             return response
+        except requests.exceptions.SSLError:
+            raise FirepyerUnreachableError(f'Failed to connect to {self.ftd_host} due to an SSL error - check certificate or disable verification')
         except requests.exceptions.ConnectionError:
             raise FirepyerUnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
 
