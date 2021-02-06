@@ -3,19 +3,19 @@ class FirepyerError(Exception):
         super().__init__(message)
 
 
-class AuthError(FirepyerError):
+class FirepyerAuthError(FirepyerError):
     """Raised when the FTD rejects the username/password authentication
     """
     pass
 
 
-class ResourceNotFound(FirepyerError):
+class FirepyerResourceNotFound(FirepyerError):
     """Raised when an object by a given name or ID cannot be found in the FTD config
     """
     pass
 
 
-class UnreachableError(FirepyerError):
+class FirepyerUnreachableError(FirepyerError):
     """Raised when the IP or hostname of the FTD device is unreachable
     """
     pass

@@ -39,6 +39,6 @@ Some common errors that may be encountered when using Fdm methods:
 
 .. module:: firepyer.exceptions
 
-.. autoexception:: AuthError
-.. autoexception:: ResourceNotFound
-.. autoexception:: UnreachableError
+.. autoexception:: FirepyerAuthError
+.. autoexception:: FirepyerResourceNotFound
+.. autoexception:: FirepyerUnreachableError

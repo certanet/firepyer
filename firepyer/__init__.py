@@ -5,7 +5,7 @@ import logging
 
 import requests
 
-from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
+from firepyer.exceptions import FirepyerAuthError, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
 __version__ = '0.0.3'
@@ -27,7 +27,6 @@ class Fdm:
         self.password = password
         self.access_token = None
         self.access_token_expiry_time = None
-        requests.packages.urllib3.disable_warnings()
 
     def api_call(self, uri, method, data=None, get_auth=True, files=None):
         # Check for http allows passing in full URL e.g. from pagination next page link
@@ -45,11 +44,12 @@ class Fdm:
             response = requests.request(method, uri,
                                         data=data,
                                         headers=headers,
-                                        verify=False,
                                         files=files)
+            if response.status_code == 500:
+                raise RuntimeError
             return response
         except requests.exceptions.ConnectionError:
-            raise UnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
+            raise FirepyerUnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
 
     def post_api(self, uri, data=None, get_auth=True, files=None):
         return self.api_call(uri, 'POST', data=data, get_auth=get_auth, files=files)
@@ -83,7 +83,7 @@ class Fdm:
         while not api_alive:
             try:
                 api_status = self.api_call('#/login', 'GET', get_auth=False)
-            except UnreachableError:
+            except FirepyerUnreachableError:
                 api_status = None
 
             if api_status is not None:
@@ -108,7 +108,7 @@ class Fdm:
         payload = f'{{"grant_type": "password", "username": "{self.username}", "password": "{self.password}"}}'
         resp = self.post_api('fdm/token', payload, get_auth=False)
         if resp.status_code == 400:
-            raise AuthError('Failed to authenticate against FTD - check username/password')
+            raise FirepyerAuthError('Failed to authenticate against FTD - check username/password')
         else:
             access_token = resp.json().get('access_token')
 
@@ -311,7 +311,7 @@ class Fdm:
         if response.status_code == 200:
             state = response.json().get('state')
         elif response.status_code == 404:
-            raise ResourceNotFound(f'Resource with ID "{deploy_id}" not does not exist!')
+            raise FirepyerResourceNotFound(f'Resource with ID "{deploy_id}" not does not exist!')
 
         return state
 
@@ -397,7 +397,7 @@ class Fdm:
         :rtype: dict
         """
         vrf_id = self.get_vrfs(vrf)['id']
-        return self.get_api_single_item(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp')
+        return self.get_api_single_item(f'devices/default/routing/virtualrouters/{vrf_id}/bgp')
 
     def set_bgp_settings(self, asn, name='', description=None, router_id=None, vrf='Global', af=4, auto_summary=False,
                          neighbours=[], networks=[], default_originate=False):
@@ -465,7 +465,7 @@ class Fdm:
         bgp_settings.update(address_family)
 
         vrf_id = self.get_vrfs(vrf)['id']
-        return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
+        return self.post_api(f'devices/default/routing/virtualrouters/{vrf_id}/bgp',
                              json.dumps(bgp_settings))
 
     def get_interfaces(self, name=''):
@@ -500,7 +500,7 @@ class Fdm:
     def delete_dhcp_server_pools(self):
         dhcp_server = self.get_dhcp_servers()
         dhcp_server['servers'] = []
-        return self.put_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
+        return self.put_api(f'devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
                             data=json.dumps(dhcp_server))
 
     def send_command(self, cmd: str):
@@ -791,10 +791,10 @@ class Fdm:
         if item_obj:
             item_list.append(item_obj)
         else:
-            raise ResourceNotFound(f'Resource with name "{item_name}" not does not exist!')
+            raise FirepyerResourceNotFound(f'Resource with name "{item_name}" not does not exist!')
 
     def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
-                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
+                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy: str = None, syslog: str = None, log: str = ''):
         """Create an AccessRule to be used in the main Access Policy. If any optional src/dst values are not
         provided, they are treated as an 'any'
 
