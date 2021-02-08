@@ -2,10 +2,11 @@ import json
 from time import sleep
 from datetime import datetime
 import logging
+from typing import List
 
 import requests
 
-from firepyer.exceptions import FirepyerAuthError, FirepyerResourceNotFound, FirepyerUnreachableError
+from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
 __version__ = '0.0.3'
@@ -50,7 +51,9 @@ class Fdm:
                                         verify=self.verify,
                                         files=files)
             if response.status_code == 500:
-                raise RuntimeError
+                raise FirepyerError('FTD presented a server error')
+            elif response.status_code == 503:
+                raise FirepyerError('FTD responded, but service unavailable, may still be booting')
             return response
         except requests.exceptions.SSLError:
             raise FirepyerUnreachableError(f'Failed to connect to {self.ftd_host} due to an SSL error - check certificate or disable verification')
@@ -74,13 +77,10 @@ class Fdm:
             return None
 
     def get_api_single_item(self, uri, data=None):
-        if self.get_api_items(uri) is not None:
-            try:
-                return self.get_api_items(uri, data)[0]
-            except (IndexError, TypeError):
-                # Items list is empty or not items list
-                return None
-        else:
+        try:
+            return self.get_api_items(uri, data)[0]
+        except (IndexError, TypeError):
+            # Items list is empty or None
             return None
 
     def check_api_status(self):
@@ -159,19 +159,28 @@ class Fdm:
         object_subset['name'] = obj['name']
         return object_subset
 
-    def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name') -> dict:
-        """
-        Get the dict for the Class with the given name
-        :param get_class: dict The 'items' in a GET reponse from an FDM Model query
-        :param obj_name: str The name of the object to find
-        :param name_field_label: str The field to use as the 'name' to match on, defaults to name
-        :return: dict if an object with the name is found, None if not
+    def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name', must_find: bool = False) -> dict:
+        """Get the dict for the Class with the given name
+
+        :param get_class: The 'items' in a GET reponse from an FDM Model query
+        :type get_class: dict
+        :param obj_name: The name of the object to find
+        :type obj_name: str
+        :param name_field_label: The field to use as the 'name' to match on, defaults to 'name'
+        :type name_field_label: str, optional
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
+        :raises FirepyerResourceNotFound: The resource with the given name could not be found
+        :return: Object with the name if found, None if not
+        :rtype: dict
         """
 
         if get_class is not None:
             for obj in get_class:
                 if obj[name_field_label] == obj_name:
                     return obj
+        if must_find:
+            raise FirepyerResourceNotFound(f'Could not find resource "{obj_name}"')
         return None
 
     def get_paged_items(self, uri: str) -> list:
@@ -192,10 +201,24 @@ class Fdm:
             first_param = ''
         return self.get_api_single_item(f'{url}{first_param}filter={filter}')
 
-    def get_obj_by_name(self, url, name):
-        return self.get_obj_by_filter(url, filter=f'name:{name}')
+    def get_obj_by_name(self, url: str, name: str, must_find: bool = False) -> dict:
+        """Gets an object of the given resource type (URL) by name
 
-    def get_net_objects(self, name=''):
+        :param url: URL to look for the resource type
+        :type url: str
+        :param name: The name of the resource to find
+        :type name: str
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
+        :raises FirepyerResourceNotFound: The resource with the given name could not be found
+        :return: A dict of the given object if found, None if not
+        :rtype: dict|None
+        """
+        if not (obj := self.get_obj_by_filter(url, filter=f'name:{name}')) and must_find:
+            raise FirepyerResourceNotFound(f'Could not find resource "{name}"')
+        return obj
+
+    def get_net_objects(self, name='', must_find: bool = False):
         """Gets all NetworkObjects or a single NetworkObject if a name is provided
 
         :param name: The name of the NetworkObject to find, defaults to ''
@@ -204,7 +227,7 @@ class Fdm:
         :rtype: list|dict
         """
         if name:
-            return self.get_obj_by_name('object/networks?limit=0&', name)
+            return self.get_obj_by_name('object/networks?limit=0&', name, must_find=must_find)
         else:
             return self.get_api_items('object/networks?limit=0')
 
@@ -251,13 +274,19 @@ class Fdm:
                        }
         return self.post_api('object/networks', json.dumps(host_object))
 
-    def create_group(self, name: str, group_type: str, objects_for_group: list, description: str = None):
-        """
-        Creates a group of pre-existing Network or Port objects
-        :param name: str Name of the group being created
-        :param group_type: str Should be either 'network' or 'port' depending on group class
-        :param objects_for_group: [Obj] All API-gathered Objects to be added to the group
-        :param description: str Description of the group being created
+    def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None):
+        """Creates a group of pre-existing Network or Port objects 
+
+        :param name: Name of the group being created
+        :type name: str
+        :param group_type: Should be either 'network' or 'port' depending on group class
+        :type group_type: str
+        :param objects_for_group: All API-gathered Objects to be added to the group
+        :type objects_for_group: List[dict]
+        :param description: Description of the group being created, defaults to None
+        :type description: str, optional
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response|None
         """
         object_group = {"name": name,
                         "description": description,
@@ -267,13 +296,13 @@ class Fdm:
 
         return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
 
-    def create_net_group(self, name: str, objects: list, description: str = None):
+    def create_net_group(self, name: str, objects: List[str], description: str = None):
         """Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
 
         :param name: Name of the NetworkGroup to be created
         :type name: str
         :param objects: Names of the Network or NetworkGroup objects to be added to the group
-        :type objects: list
+        :type objects: List[str]
         :param description: A description for the NetworkGroup, defaults to None
         :type description: str, optional
         :return: The full requests response object or None if an error occurred
@@ -341,16 +370,18 @@ class Fdm:
             # Nothing to deploy
             return False
 
-    def get_vrfs(self, name=''):
+    def get_vrfs(self, name='', must_find: bool = False):
         """Gets all VRFs or a single VRF if a name is provided
 
         :param name: The name of a VRF to find, defaults to ''
         :type name: str, optional
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
         :return: A list of all VRFs if no name is provided, or a dict of the single VRF with the given name
         :rtype: list|dict
         """
         if name:
-            return self.get_obj_by_name('devices/default/routing/virtualrouters', name)
+            return self.get_obj_by_name('devices/default/routing/virtualrouters', name, must_find=must_find)
         else:
             return self.get_api_items('devices/default/routing/virtualrouters')
 
@@ -487,13 +518,16 @@ class Fdm:
         else:
             return self.get_api_items('devices/default/interfaces')
 
-    def get_interface_by_phy(self, phy_name: str):
+    def get_interface_by_phy(self, phy_name: str, must_find: bool = False) -> dict:
+        """Get the dict for a Interface with the given physical name e.g. GigabitEthernet0/0
+        :param phy_name: The physical name of the Interface to find
+        :type phy_name: str
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
+        :return: Interface object is found, None if not
+        :rtype: dict|None
         """
-        Get the dict for a Interface with the given physical name e.g. GigabitEthernet0/0
-        :param phy_name: str The physical name of the Interface to find
-        :return: dict if Interface is found, None if not
-        """
-        return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
+        return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName', must_find=must_find)
 
     def get_dhcp_servers(self) -> dict:
         """Gets the DHCP server configuration, including any pools
@@ -650,13 +684,13 @@ class Fdm:
                        }
         return self.post_api(f'object/{type.lower()}ports', json.dumps(port_object))
 
-    def create_port_group(self, name: str, objects: list, description: str = None):
+    def create_port_group(self, name: str, objects: List[str], description: str = None):
         """Creates a PortGroup object, containing at least one existing tcp/udp/icmp Port or PortGroup
 
         :param name: Name of the PortGroup to create
         :type name: str
         :param objects: Names of the tcp/udp/icmp Port or PortGroup objects to be added to the group
-        :type objects: list
+        :type objects: List[str]
         :param description: A description for the PortGroup, defaults to None
         :type description: str, optional
         :return: The full requests response object or None if an error occurred
