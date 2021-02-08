@@ -275,7 +275,7 @@ class Fdm:
         return self.post_api('object/networks', json.dumps(host_object))
 
     def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None):
-        """Creates a group of pre-existing Network or Port objects 
+        """Creates a group of pre-existing Network or Port objects
 
         :param name: Name of the group being created
         :type name: str
@@ -505,6 +505,17 @@ class Fdm:
         return self.post_api(f'devices/default/routing/virtualrouters/{vrf_id}/bgp',
                              json.dumps(bgp_settings))
 
+    def get_ospf_settings(self, vrf='Global') -> List[dict]:
+        """Get the OSPF settings for a specifc VRF or the default (Global)
+
+        :param vrf: Name of a VRF to get the OSPF settings, defaults to 'Global'
+        :type vrf: str, optional
+        :return: List of all OSPFSettings objects, one per process ID
+        :rtype: List[dict]
+        """
+        vrf_obj = self.get_vrfs(vrf, must_find=True)
+        return self.get_api_items(f'devices/default/routing/virtualrouters/{vrf_obj["id"]}/ospf')
+
     def get_interfaces(self, name=''):
         """Gets all Interfaces or a single Interface if a name is provided
 
@@ -519,8 +530,9 @@ class Fdm:
             return self.get_api_items('devices/default/interfaces')
 
     def get_interface_by_phy(self, phy_name: str, must_find: bool = False) -> dict:
-        """Get the dict for a Interface with the given physical name e.g. GigabitEthernet0/0
-        :param phy_name: The physical name of the Interface to find
+        """Get the dict for a Interface with the given physical name
+
+        :param phy_name: The physical name of the Interface to find e.g. GigabitEthernet0/0
         :type phy_name: str
         :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
         :type must_find: bool, optional
@@ -528,6 +540,17 @@ class Fdm:
         :rtype: dict|None
         """
         return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName', must_find=must_find)
+
+    def get_subinterfaces(self, phy_name: str) -> List[dict]:
+        """Gets all SubInterfaces for the given physical interface
+
+        :param phy_name: The physical name of the Interface to find e.g. GigabitEthernet0/0
+        :type phy_name: str
+        :return: List of SubInterface objects found
+        :rtype: List[dict]
+        """
+        parent_interface = self.get_interface_by_phy(phy_name, must_find=True)
+        return self.get_api_items(f'devices/default/interfaces/{parent_interface["id"]}/subinterfaces')
 
     def get_dhcp_servers(self) -> dict:
         """Gets the DHCP server configuration, including any pools
