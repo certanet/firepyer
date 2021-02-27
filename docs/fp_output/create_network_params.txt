@@ -1,0 +1,12 @@
+name='RFC-1918-172', value='172.16.0.0/12', type='network'
+
+{'description': None,
+ 'dnsResolution': 'IPV4_ONLY',
+ 'id': 'f8b81657-793a-11eb-b948-fbbf2c1ae1be',
+ 'isSystemDefined': False,
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/networks/f8b81657-793a-11eb-b948-fbbf2c1ae1be'},
+ 'name': 'RFC-1918-172',
+ 'subType': 'NETWORK',
+ 'type': 'networkobject',
+ 'value': '172.16.0.0/12',
+ 'version': 'oani42zndwyl5'}

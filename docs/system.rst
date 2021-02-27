@@ -10,6 +10,7 @@ General system settings.
    :noindex:
 
    .. automethod:: create_syslog_server
+   .. fp_output:: create_syslog_server_params
    .. automethod:: get_dhcp_servers
    .. fp_output:: get_dhcp_servers
    .. automethod:: get_hostname

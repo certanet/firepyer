@@ -1,0 +1,11 @@
+name='ping-reply', type='ECHO_REPLY'
+
+{'description': None,
+ 'icmpv4Code': None,
+ 'icmpv4Type': 'ECHO_REPLY',
+ 'id': '32bc6efd-794b-11eb-b948-a194e41e088a',
+ 'isSystemDefined': False,
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/icmpv4ports/32bc6efd-794b-11eb-b948-a194e41e088a'},
+ 'name': 'ping-reply',
+ 'type': 'icmpv4portobject',
+ 'version': 'ficvgobxazqtj'}

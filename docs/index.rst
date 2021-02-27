@@ -17,6 +17,7 @@ The intended usage is to replace some of the tedious clicking tasks from the GUI
    :caption: Features:
 
    deployments
+   Interfaces & Zones <interfaces>
    networks
    ports
    routing

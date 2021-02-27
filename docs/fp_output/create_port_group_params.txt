@@ -1,0 +1,17 @@
+name='HTTP-S Group', objects=['HTTP', 'HTTPS'], description='HTTP and HTTPS ports'
+
+{'description': 'HTTP and HTTPS ports',
+ 'id': 'cf42834b-794c-11eb-b948-efc7c141f6b3',
+ 'isSystemDefined': False,
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/portgroups/cf42834b-794c-11eb-b948-efc7c141f6b3'},
+ 'name': 'HTTP-S Group',
+ 'objects': [{'id': '18312adc-38bb-11e2-86aa-62f0c593a59a',
+              'name': 'HTTP',
+              'type': 'tcpportobject',
+              'version': 'jfkuxugpghogc'},
+             {'id': '1834bd00-38bb-11e2-86aa-62f0c593a59a',
+              'name': 'HTTPS',
+              'type': 'tcpportobject',
+              'version': 'f7j76od54tkia'}],
+ 'type': 'portobjectgroup',
+ 'version': 'cwappx23fqvaz'}

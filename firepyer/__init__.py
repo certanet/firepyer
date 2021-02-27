@@ -1,18 +1,19 @@
-import json
-from time import sleep
 from datetime import datetime
+import json
 import logging
+from time import sleep
+from typing import List
 
 import requests
 
-from firepyer.exceptions import AuthError, ResourceNotFound, UnreachableError
+from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class Fdm:
-    def __init__(self, host, username, password):
+    def __init__(self, host: str, username: str, password: str, verify: bool = True):
         """Provides a connection point to an FTD device
 
         :param host: The IP or hostname of the FTD device
@@ -21,13 +22,17 @@ class Fdm:
         :type username: str
         :param password: Password to login to FDM
         :type password: str
+        :param verify: Verify the SSL certificate presented by the FTD API, defaults to True
+        :type verify: bool, optional
         """
         self.ftd_host = host
         self.username = username
         self.password = password
         self.access_token = None
         self.access_token_expiry_time = None
-        requests.packages.urllib3.disable_warnings()
+        self.verify = verify
+        if not verify:
+            requests.packages.urllib3.disable_warnings()
 
     def api_call(self, uri, method, data=None, get_auth=True, files=None):
         # Check for http allows passing in full URL e.g. from pagination next page link
@@ -45,11 +50,17 @@ class Fdm:
             response = requests.request(method, uri,
                                         data=data,
                                         headers=headers,
-                                        verify=False,
+                                        verify=self.verify,
                                         files=files)
+            if response.status_code == 500:
+                raise FirepyerError('FTD presented a server error')
+            elif response.status_code == 503:
+                raise FirepyerError('FTD responded, but service unavailable, may still be booting')
             return response
+        except requests.exceptions.SSLError:
+            raise FirepyerUnreachableError(f'Failed to connect to {self.ftd_host} due to an SSL error - check certificate or disable verification')
         except requests.exceptions.ConnectionError:
-            raise UnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
+            raise FirepyerUnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
 
     def post_api(self, uri, data=None, get_auth=True, files=None):
         return self.api_call(uri, 'POST', data=data, get_auth=get_auth, files=files)
@@ -68,13 +79,10 @@ class Fdm:
             return None
 
     def get_api_single_item(self, uri, data=None):
-        if self.get_api_items(uri) is not None:
-            try:
-                return self.get_api_items(uri, data)[0]
-            except (IndexError, TypeError):
-                # Items list is empty or not items list
-                return None
-        else:
+        try:
+            return self.get_api_items(uri, data)[0]
+        except (IndexError, TypeError):
+            # Items list is empty or None
             return None
 
     def check_api_status(self):
@@ -83,7 +91,7 @@ class Fdm:
         while not api_alive:
             try:
                 api_status = self.api_call('#/login', 'GET', get_auth=False)
-            except UnreachableError:
+            except FirepyerUnreachableError:
                 api_status = None
 
             if api_status is not None:
@@ -108,7 +116,7 @@ class Fdm:
         payload = f'{{"grant_type": "password", "username": "{self.username}", "password": "{self.password}"}}'
         resp = self.post_api('fdm/token', payload, get_auth=False)
         if resp.status_code == 400:
-            raise AuthError('Failed to authenticate against FTD - check username/password')
+            raise FirepyerAuthError('Failed to authenticate against FTD - check username/password')
         else:
             access_token = resp.json().get('access_token')
 
@@ -153,19 +161,28 @@ class Fdm:
         object_subset['name'] = obj['name']
         return object_subset
 
-    def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name') -> dict:
-        """
-        Get the dict for the Class with the given name
-        :param get_class: dict The 'items' in a GET reponse from an FDM Model query
-        :param obj_name: str The name of the object to find
-        :param name_field_label: str The field to use as the 'name' to match on, defaults to name
-        :return: dict if an object with the name is found, None if not
+    def get_class_by_name(self, get_class: dict, obj_name: str, name_field_label: str = 'name', must_find: bool = False) -> dict:
+        """Get the dict for the Class with the given name
+
+        :param get_class: The 'items' in a GET reponse from an FDM Model query
+        :type get_class: dict
+        :param obj_name: The name of the object to find
+        :type obj_name: str
+        :param name_field_label: The field to use as the 'name' to match on, defaults to 'name'
+        :type name_field_label: str, optional
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
+        :raises FirepyerResourceNotFound: The resource with the given name could not be found
+        :return: Object with the name if found, None if not
+        :rtype: dict
         """
 
         if get_class is not None:
             for obj in get_class:
                 if obj[name_field_label] == obj_name:
                     return obj
+        if must_find:
+            raise FirepyerResourceNotFound(f'Could not find resource "{obj_name}"')
         return None
 
     def get_paged_items(self, uri: str) -> list:
@@ -186,10 +203,24 @@ class Fdm:
             first_param = ''
         return self.get_api_single_item(f'{url}{first_param}filter={filter}')
 
-    def get_obj_by_name(self, url, name):
-        return self.get_obj_by_filter(url, filter=f'name:{name}')
+    def get_obj_by_name(self, url: str, name: str, must_find: bool = False) -> dict:
+        """Gets an object of the given resource type (URL) by name
 
-    def get_net_objects(self, name=''):
+        :param url: URL to look for the resource type
+        :type url: str
+        :param name: The name of the resource to find
+        :type name: str
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
+        :raises FirepyerResourceNotFound: The resource with the given name could not be found
+        :return: A dict of the given object if found, None if not
+        :rtype: dict|None
+        """
+        if not (obj := self.get_obj_by_filter(url, filter=f'name:{name}')) and must_find:
+            raise FirepyerResourceNotFound(f'Could not find resource "{name}"')
+        return obj
+
+    def get_net_objects(self, name='', must_find: bool = False):
         """Gets all NetworkObjects or a single NetworkObject if a name is provided
 
         :param name: The name of the NetworkObject to find, defaults to ''
@@ -198,7 +229,7 @@ class Fdm:
         :rtype: list|dict
         """
         if name:
-            return self.get_obj_by_name('object/networks?limit=0&', name)
+            return self.get_obj_by_name('object/networks?limit=0&', name, must_find=must_find)
         else:
             return self.get_api_items('object/networks?limit=0')
 
@@ -234,24 +265,69 @@ class Fdm:
                 break
         return net
 
-    def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
+    def create_network(self, name: str, value: str, type: str = 'HOST', description: str = None) -> dict:
+        """Creates a network Host, FQDN, Network or Range object
+
+        :param name: Name of the object
+        :type name: str
+        :param value: Value of the object, depending on type e.g. Host would be an IP address, Network would be a CIDR network etc.
+        :type value: str
+        :param type: Type of Network object to create, defaults to 'HOST'
+        :type type: str, optional
+        :param description: Description of the object, defaults to None
+        :type description: str, optional
+        :raises FirepyerInvalidOption: If the type is not one of "HOST", "FQDN", "NETWORK" or "RANGE"
+        :return: The Network object that has been created
+        :rtype: dict
+        """
+        type = type.upper()
+        if type not in ['HOST', 'FQDN', 'NETWORK', 'RANGE']:
+            raise FirepyerInvalidOption('"type" should be one of "HOST", "FQDN", "NETWORK" or "RANGE"')
 
         host_object = {"name": name,
                        "description": description,
-                       "subType": type.upper(),
+                       "subType": type,
                        "value": value,
                        "dnsResolution": "IPV4_ONLY",
                        "type": "networkobject"
                        }
-        return self.post_api('object/networks', json.dumps(host_object))
+        return self._create_instance('object/networks', host_object)
 
-    def create_group(self, name: str, group_type: str, objects_for_group: list, description: str = None):
+    def _create_instance(self, uri: str, instance_def: dict) -> dict:
+        """POST the JSON of the provided dict to the URI to create an object and return a dict of the created object instance
+
+        :param uri: URI endpoint to send the request to
+        :type uri: str
+        :param instance_def: Definition of the object instance to create, the model is defined per object in the API
+        :type instance_def: dict
+        :raises FirepyerError: If any server-side errors occur the description(s) will be passed through
+        :return: The object instance that has been created
+        :rtype: dict
         """
-        Creates a group of pre-existing Network or Port objects
-        :param name: str Name of the group being created
-        :param group_type: str Should be either 'network' or 'port' depending on group class
-        :param objects_for_group: [Obj] All API-gathered Objects to be added to the group
-        :param description: str Description of the group being created
+        resp = self.post_api(uri=uri, data=json.dumps(instance_def))
+
+        if resp.status_code == 200:
+            return resp.json()
+        elif resp.status_code == 422:
+            try:
+                err_msgs = [err['description'] for err in resp.json()['error']['messages']]
+            except KeyError:
+                err_msgs = resp.json()
+            raise FirepyerError(f'Unable to create due to the following error(s): {err_msgs}')
+
+    def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None) -> dict:
+        """Creates a group of pre-existing Network or Port objects
+
+        :param name: Name of the group being created
+        :type name: str
+        :param group_type: Should be either 'network' or 'port' depending on group class
+        :type group_type: str
+        :param objects_for_group: All API-gathered Objects to be added to the group
+        :type objects_for_group: List[dict]
+        :param description: Description of the group being created, defaults to None
+        :type description: str, optional
+        :return: The created group object
+        :rtype: dict
         """
         object_group = {"name": name,
                         "description": description,
@@ -259,23 +335,28 @@ class Fdm:
                         "type": f"{group_type}objectgroup"
                         }
 
-        return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
+        return self._create_instance(f'object/{group_type}groups', object_group)
 
-    def create_net_group(self, name: str, objects: list, description: str = None):
+    def create_net_group(self, name: str, objects: List[str], description: str = None) -> dict:
         """Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
 
         :param name: Name of the NetworkGroup to be created
         :type name: str
         :param objects: Names of the Network or NetworkGroup objects to be added to the group
-        :type objects: list
+        :type objects: List[str]
         :param description: A description for the NetworkGroup, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :raises FirepyerResourceNotFound: If any of the given object names do not exist
+        :return: The created NetworkGroup object
+        :rtype: dict
         """
         objects_for_group = []
         for obj_name in objects:
-            objects_for_group.append(self.get_net_obj_or_grp(obj_name))
+            obj = self.get_net_obj_or_grp(obj_name)
+            if obj:
+                objects_for_group.append(obj)
+            else:
+                raise FirepyerResourceNotFound(f'Object "{obj_name}" not does not exist!')
 
         return self.create_group(name, 'network', objects_for_group, description)
 
@@ -311,7 +392,7 @@ class Fdm:
         if response.status_code == 200:
             state = response.json().get('state')
         elif response.status_code == 404:
-            raise ResourceNotFound(f'Resource with ID "{deploy_id}" not does not exist!')
+            raise FirepyerResourceNotFound(f'Resource with ID "{deploy_id}" not does not exist!')
 
         return state
 
@@ -335,16 +416,18 @@ class Fdm:
             # Nothing to deploy
             return False
 
-    def get_vrfs(self, name=''):
+    def get_vrfs(self, name='', must_find: bool = False):
         """Gets all VRFs or a single VRF if a name is provided
 
         :param name: The name of a VRF to find, defaults to ''
         :type name: str, optional
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
         :return: A list of all VRFs if no name is provided, or a dict of the single VRF with the given name
         :rtype: list|dict
         """
         if name:
-            return self.get_obj_by_name('devices/default/routing/virtualrouters', name)
+            return self.get_obj_by_name('devices/default/routing/virtualrouters', name, must_find=must_find)
         else:
             return self.get_api_items('devices/default/routing/virtualrouters')
 
@@ -356,7 +439,7 @@ class Fdm:
         """
         return self.get_api_single_item('devices/default/routing/bgpgeneralsettings')
 
-    def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None):
+    def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None) -> dict:
         """Set the device's general BGP settings
 
         :param asn: The AS number for the BGP process
@@ -367,8 +450,8 @@ class Fdm:
         :type description: str, optional
         :param router_id: A router ID for the BGP process, defaults to None
         :type router_id: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The BGPGeneralSettings object instance created
+        :rtype: dict
         """
         bgp_settings = {"name": name,
                         "description": description,
@@ -386,7 +469,7 @@ class Fdm:
                         # "asnotationDot": true,
                         "type": "bgpgeneralsettings"
                         }
-        return self.post_api('devices/default/routing/bgpgeneralsettings', data=json.dumps(bgp_settings))
+        return self._create_instance('devices/default/routing/bgpgeneralsettings', bgp_settings)
 
     def get_bgp_settings(self, vrf='Global'):
         """Get the BGP settings for a specifc VRF or the default (Global)
@@ -397,10 +480,10 @@ class Fdm:
         :rtype: dict
         """
         vrf_id = self.get_vrfs(vrf)['id']
-        return self.get_api_single_item(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp')
+        return self.get_api_single_item(f'devices/default/routing/virtualrouters/{vrf_id}/bgp')
 
     def set_bgp_settings(self, asn, name='', description=None, router_id=None, vrf='Global', af=4, auto_summary=False,
-                         neighbours=[], networks=[], default_originate=False):
+                         neighbours=[], networks=[], default_originate=False) -> dict:
         """Configures BGP settings for the give (or default) VRF
 
         :param asn: The AS Number of the BGP process, MUST be the same as in the BGPGeneralSettings
@@ -424,8 +507,8 @@ class Fdm:
         :type networks: list, optional
         :param default_originate: Enable or disable default originate for BGP, defaults to False
         :type default_originate: bool, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The BGPSettings object instance created
+        :rtype: dict
         """
         if not name:
             name = f'{vrf}-BGPSettings'
@@ -464,23 +547,55 @@ class Fdm:
                         }
         bgp_settings.update(address_family)
 
-        vrf_id = self.get_vrfs(vrf)['id']
-        return self.post_api(f'/devices/default/routing/virtualrouters/{vrf_id}/bgp',
-                             json.dumps(bgp_settings))
+        vrf_obj = self.get_vrfs(vrf, must_find=True)
+        return self._create_instance(f'devices/default/routing/virtualrouters/{vrf_obj["id"]}/bgp', bgp_settings)
+
+    def get_ospf_settings(self, vrf='Global') -> List[dict]:
+        """Get the OSPF settings for a specifc VRF or the default (Global)
+
+        :param vrf: Name of a VRF to get the OSPF settings, defaults to 'Global'
+        :type vrf: str, optional
+        :return: List of all OSPFSettings objects, one per process ID
+        :rtype: List[dict]
+        """
+        vrf_obj = self.get_vrfs(vrf, must_find=True)
+        return self.get_api_items(f'devices/default/routing/virtualrouters/{vrf_obj["id"]}/ospf')
 
     def get_interfaces(self, name=''):
+        """Gets all Interfaces or a single Interface if a name is provided
+
+        :param name: The name of the Interface to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all Interfaces if no name is provided, or a dict of the single Interface with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('devices/default/interfaces', name)
         else:
             return self.get_api_items('devices/default/interfaces')
 
-    def get_interface_by_phy(self, phy_name: str):
+    def get_interface_by_phy(self, phy_name: str, must_find: bool = False) -> dict:
+        """Get the dict for a Interface with the given physical name
+
+        :param phy_name: The physical name of the Interface to find e.g. GigabitEthernet0/0
+        :type phy_name: str
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
+        :return: Interface object is found, None if not
+        :rtype: dict|None
         """
-        Get the dict for a Interface with the given physical name e.g. GigabitEthernet0/0
-        :param phy_name: str The physical name of the Interface to find
-        :return: dict if Interface is found, None if not
+        return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName', must_find=must_find)
+
+    def get_subinterfaces(self, phy_name: str) -> List[dict]:
+        """Gets all SubInterfaces for the given physical interface
+
+        :param phy_name: The physical name of the Interface to find e.g. GigabitEthernet0/0
+        :type phy_name: str
+        :return: List of SubInterface objects found
+        :rtype: List[dict]
         """
-        return self.get_class_by_name(self.get_interfaces(), phy_name, name_field_label='hardwareName')
+        parent_interface = self.get_interface_by_phy(phy_name, must_find=True)
+        return self.get_api_items(f'devices/default/interfaces/{parent_interface["id"]}/subinterfaces')
 
     def get_dhcp_servers(self) -> dict:
         """Gets the DHCP server configuration, including any pools
@@ -493,7 +608,7 @@ class Fdm:
     def delete_dhcp_server_pools(self):
         dhcp_server = self.get_dhcp_servers()
         dhcp_server['servers'] = []
-        return self.put_api(f'/devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
+        return self.put_api(f'devicesettings/default/dhcpservercontainers/{dhcp_server["id"]}',
                             data=json.dumps(dhcp_server))
 
     def send_command(self, cmd: str):
@@ -566,7 +681,7 @@ class Fdm:
         else:
             return self.get_api_items(f'object/icmpv{af}ports?limit=0')
 
-    def create_icmp_port(self, name, type, code=None, af='4', description=None):
+    def create_icmp_port(self, name, type, code=None, af='4', description=None) -> dict:
         """Create an ICMPv4/6 Port object
 
         :param name: Name of the object
@@ -579,11 +694,14 @@ class Fdm:
         :type af: str, optional
         :param description: Description for the Port object, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response
+        :return: The ICMP Port object instance created
+        :rtype: dict
         """
         if code:
             code = code.upper()
+        else:
+            # Catches empty string
+            code = None
 
         icmp_object = {'description': description,
                        f'icmpv{af}Code': code,
@@ -591,7 +709,7 @@ class Fdm:
                        'name': name,
                        'type': f'icmpv{af}portobject'}
 
-        return self.post_api(f'object/icmpv{af}ports', json.dumps(icmp_object))
+        return self._create_instance(f'object/icmpv{af}ports', icmp_object)
 
     def get_port_obj_or_grp(self, name) -> dict:
         """Get a Port (tcp/udp/icmpv4/icmpv6) object or PortGroup by the given name
@@ -616,7 +734,7 @@ class Fdm:
                 break
         return port
 
-    def create_port_object(self, name: str, port: str, type: str, description: str = None):
+    def create_port_object(self, name: str, port: str, type: str, description: str = None) -> dict:
         """Create a TCP or UDP Port object to use in access rules
 
         :param name: Name of the Port object to be created
@@ -627,36 +745,40 @@ class Fdm:
         :type type: str
         :param description: A description for the Port, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response
+        :return: The TCP/UDP Port object instance created
+        :rtype: dict
         """
         port_object = {"name": name,
                        "description": description,
                        "port": port,
                        "type": f"{type.lower()}portobject"
                        }
-        return self.post_api(f'object/{type.lower()}ports', json.dumps(port_object))
+        return self._create_instance(f'object/{type.lower()}ports', port_object)
 
-    def create_port_group(self, name: str, objects: list, description: str = None):
+    def create_port_group(self, name: str, objects: List[str], description: str = None) -> dict:
         """Creates a PortGroup object, containing at least one existing tcp/udp/icmp Port or PortGroup
 
         :param name: Name of the PortGroup to create
         :type name: str
         :param objects: Names of the tcp/udp/icmp Port or PortGroup objects to be added to the group
-        :type objects: list
+        :type objects: List[str]
         :param description: A description for the PortGroup, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response
+        :return: The PortGroup object instance created
+        :rtype: dict
         """
         objects_for_group = []
         for obj_name in objects:
-            objects_for_group.append(self.get_port_obj_or_grp(obj_name))
+            obj = self.get_port_obj_or_grp(obj_name)
+            if obj:
+                objects_for_group.append(obj)
+            else:
+                raise FirepyerResourceNotFound(f'Object "{obj_name}" not does not exist!')
 
         return self.create_group(name, 'port', objects_for_group, description)
 
     def get_initial_provision(self) -> dict:
-        return self.get_api_single_item('/devices/default/action/provision')
+        return self.get_api_single_item('devices/default/action/provision')
 
     def set_initial_provision(self, new_password, current_password='Admin123'):
         provision = self.get_initial_provision()
@@ -666,7 +788,7 @@ class Fdm:
         provision.pop('links')
         provision.pop('version')
 
-        return self.post_api('/devices/default/action/provision',
+        return self.post_api('devices/default/action/provision',
                              data=json.dumps(provision))
 
     def get_hostname_obj(self) -> dict:
@@ -720,9 +842,16 @@ class Fdm:
         :return: The target FTD system information
         :rtype: dict
         """
-        return self.get_api('/operational/systeminfo/default').json()
+        return self.get_api('operational/systeminfo/default').json()
 
     def get_security_zones(self, name=''):
+        """Gets all SecurityZones or a single SecurityZone if a name is provided
+
+        :param name: The name of the SecurityZone to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all SecurityZones if no name is provided, or a dict of the single SecurityZone with the given name
+        :rtype: list|dict
+        """
         if name:
             return self.get_obj_by_name('object/securityzones?limit=0&', name)
         else:
@@ -737,7 +866,6 @@ class Fdm:
         :param phy_interfaces: list The physical names of any Interfaces to be part of this Security Zone e.g. GigabitEthernet0/0
         :param mode: str The mode of the Security Zone, either ROUTED or PASSIVE
         """
-
         zone_interfaces = []
 
         for intf in phy_interfaces:
@@ -778,10 +906,11 @@ class Fdm:
         if item_obj:
             item_list.append(item_obj)
         else:
-            raise ResourceNotFound(f'Resource with name "{item_name}" not does not exist!')
+            raise FirepyerResourceNotFound(f'Resource with name "{item_name}" not does not exist!')
 
-    def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
-                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy='', syslog='', log=''):
+    def create_access_rule(self, name: str, action: str, src_zones: List[str] = [], src_networks: List[str] = [], src_ports: List[str] = [],
+                           dst_zones: List[str] = [], dst_networks: List[str] = [], dst_ports: List[str] = [], int_policy: str = None,
+                           syslog: str = None, log: str = '') -> dict:
         """Create an AccessRule to be used in the main Access Policy. If any optional src/dst values are not
         provided, they are treated as an 'any'
 
@@ -801,15 +930,15 @@ class Fdm:
         :type dst_networks: list, optional
         :param dst_ports: List of names of destination ports, names can be of either tcp/udp PortObject or PortGroup, defaults to []
         :type dst_ports: list, optional
-        :param int_policy: Name of an IntrusionPolicy to apply to the rule, defaults to ''
+        :param int_policy: Name of an IntrusionPolicy to apply to the rule, defaults to None
         :type int_policy: str, optional
-        :param syslog: Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to ''
+        :param syslog: Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to None
         :type syslog: str, optional
         :param log: Log the rule at start and end of connection, end of connection, or no log, should be one of ['BOTH', 'END', ''], defaults to ''
         :type log: str, optional
         :raises ResourceNotFound: If any of the object names passed in cannot be found e.g. a source network or dest port has not been created
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The AccessRule object that has been created
+        :rtype: dict
         """
 
         rule_src_zones = []
@@ -878,8 +1007,7 @@ class Fdm:
                 }
 
         policy_id = self.get_acp()['id']
-        return self.post_api(f'policy/accesspolicies/{policy_id}/accessrules',
-                             data=json.dumps(rule))
+        return self._create_instance(f'policy/accesspolicies/{policy_id}/accessrules', rule)
 
     def get_smartlicense(self):
         return self.get_api_items('license/smartlicenses')
@@ -925,7 +1053,7 @@ class Fdm:
         else:
             return self.get_api_items('object/syslogalerts?limit=0')
 
-    def create_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
+    def create_syslog_server(self, ip, protocol='UDP', port='514', interface=None) -> dict:
         """Creates a SyslogServer to be able to send access rule and system logs to
 
         :param ip: IP address of the syslog server
@@ -953,5 +1081,4 @@ class Fdm:
                          "port": port,
                          "type": "syslogserver"
                          }
-        return self.post_api('object/syslogalerts',
-                             data=json.dumps(syslog_object)).json()
+        return self._create_instance('object/syslogalerts', syslog_object)
