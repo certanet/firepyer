@@ -1,7 +1,7 @@
-import json
-from time import sleep
 from datetime import datetime
+import json
 import logging
+from time import sleep
 from typing import List
 
 import requests
@@ -13,7 +13,7 @@ __version__ = '0.0.3'
 
 
 class Fdm:
-    def __init__(self, host, username, password, verify=True):
+    def __init__(self, host: str, username: str, password: str, verify: bool = True):
         """Provides a connection point to an FTD device
 
         :param host: The IP or hostname of the FTD device
@@ -22,6 +22,8 @@ class Fdm:
         :type username: str
         :param password: Password to login to FDM
         :type password: str
+        :param verify: Verify the SSL certificate presented by the FTD API, defaults to True
+        :type verify: bool, optional
         """
         self.ftd_host = host
         self.username = username
@@ -263,18 +265,57 @@ class Fdm:
                 break
         return net
 
-    def create_object(self, name: str, value: str, type: str = 'HOST', description: str = None):
+    def create_network(self, name: str, value: str, type: str = 'HOST', description: str = None) -> dict:
+        """Creates a network Host, FQDN, Network or Range object
+
+        :param name: Name of the object
+        :type name: str
+        :param value: Value of the object, depending on type e.g. Host would be an IP address, Network would be a CIDR network etc.
+        :type value: str
+        :param type: Type of Network object to create, defaults to 'HOST'
+        :type type: str, optional
+        :param description: Description of the object, defaults to None
+        :type description: str, optional
+        :raises FirepyerInvalidOption: If the type is not one of "HOST", "FQDN", "NETWORK" or "RANGE"
+        :return: The Network object that has been created
+        :rtype: dict
+        """
+        type = type.upper()
+        if type not in ['HOST', 'FQDN', 'NETWORK', 'RANGE']:
+            raise FirepyerInvalidOption('"type" should be one of "HOST", "FQDN", "NETWORK" or "RANGE"')
 
         host_object = {"name": name,
                        "description": description,
-                       "subType": type.upper(),
+                       "subType": type,
                        "value": value,
                        "dnsResolution": "IPV4_ONLY",
                        "type": "networkobject"
                        }
-        return self.post_api('object/networks', json.dumps(host_object))
+        return self._create_instance('object/networks', host_object)
 
-    def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None):
+    def _create_instance(self, uri: str, instance_def: dict) -> dict:
+        """POST the JSON of the provided dict to the URI to create an object and return a dict of the created object instance
+
+        :param uri: URI endpoint to send the request to
+        :type uri: str
+        :param instance_def: Definition of the object instance to create, the model is defined per object in the API
+        :type instance_def: dict
+        :raises FirepyerError: If any server-side errors occur the description(s) will be passed through
+        :return: The object instance that has been created
+        :rtype: dict
+        """
+        resp = self.post_api(uri, json.dumps(instance_def))
+
+        if resp.status_code == 200:
+            return resp.json()
+        elif resp.status_code == 422:
+            try:
+                err_msgs = [err['description'] for err in resp.json()['error']['messages']]
+            except KeyError:
+                err_msgs = resp.json()
+            raise FirepyerError(f'Unable to create due to the following error(s): {err_msgs}')
+
+    def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None) -> dict:
         """Creates a group of pre-existing Network or Port objects
 
         :param name: Name of the group being created
@@ -285,8 +326,8 @@ class Fdm:
         :type objects_for_group: List[dict]
         :param description: Description of the group being created, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The created group object
+        :rtype: dict
         """
         object_group = {"name": name,
                         "description": description,
@@ -294,9 +335,9 @@ class Fdm:
                         "type": f"{group_type}objectgroup"
                         }
 
-        return self.post_api(f'object/{group_type}groups', json.dumps(object_group))
+        return self._create_instance(f'object/{group_type}groups', object_group)
 
-    def create_net_group(self, name: str, objects: List[str], description: str = None):
+    def create_net_group(self, name: str, objects: List[str], description: str = None) -> dict:
         """Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object
 
         :param name: Name of the NetworkGroup to be created
@@ -305,12 +346,17 @@ class Fdm:
         :type objects: List[str]
         :param description: A description for the NetworkGroup, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :raises FirepyerResourceNotFound: If any of the given object names do not exist
+        :return: The created NetworkGroup object
+        :rtype: dict
         """
         objects_for_group = []
         for obj_name in objects:
-            objects_for_group.append(self.get_net_obj_or_grp(obj_name))
+            obj = self.get_net_obj_or_grp(obj_name)
+            if obj:
+                objects_for_group.append(obj)
+            else:
+                raise FirepyerResourceNotFound(f'Object "{obj_name}" not does not exist!')
 
         return self.create_group(name, 'network', objects_for_group, description)
 
@@ -654,6 +700,9 @@ class Fdm:
         """
         if code:
             code = code.upper()
+        else:
+            # Catches empty string
+            code = None
 
         icmp_object = {'description': description,
                        f'icmpv{af}Code': code,
@@ -856,8 +905,9 @@ class Fdm:
         else:
             raise FirepyerResourceNotFound(f'Resource with name "{item_name}" not does not exist!')
 
-    def create_access_rule(self, name, action, src_zones=[], src_networks=[], src_ports=[],
-                           dst_zones=[], dst_networks=[], dst_ports=[], int_policy: str = None, syslog: str = None, log: str = ''):
+    def create_access_rule(self, name: str, action: str, src_zones: List[str] = [], src_networks: List[str] = [], src_ports: List[str] = [],
+                           dst_zones: List[str] = [], dst_networks: List[str] = [], dst_ports: List[str] = [], int_policy: str = None,
+                           syslog: str = None, log: str = '') -> dict:
         """Create an AccessRule to be used in the main Access Policy. If any optional src/dst values are not
         provided, they are treated as an 'any'
 
@@ -877,15 +927,15 @@ class Fdm:
         :type dst_networks: list, optional
         :param dst_ports: List of names of destination ports, names can be of either tcp/udp PortObject or PortGroup, defaults to []
         :type dst_ports: list, optional
-        :param int_policy: Name of an IntrusionPolicy to apply to the rule, defaults to ''
+        :param int_policy: Name of an IntrusionPolicy to apply to the rule, defaults to None
         :type int_policy: str, optional
-        :param syslog: Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to ''
+        :param syslog: Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to None
         :type syslog: str, optional
         :param log: Log the rule at start and end of connection, end of connection, or no log, should be one of ['BOTH', 'END', ''], defaults to ''
         :type log: str, optional
         :raises ResourceNotFound: If any of the object names passed in cannot be found e.g. a source network or dest port has not been created
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The AccessRule object that has been created
+        :rtype: dict
         """
 
         rule_src_zones = []
@@ -954,8 +1004,7 @@ class Fdm:
                 }
 
         policy_id = self.get_acp()['id']
-        return self.post_api(f'policy/accesspolicies/{policy_id}/accessrules',
-                             data=json.dumps(rule))
+        return self._create_instance(f'policy/accesspolicies/{policy_id}/accessrules', rule)
 
     def get_smartlicense(self):
         return self.get_api_items('license/smartlicenses')

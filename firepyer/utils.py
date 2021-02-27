@@ -3,7 +3,7 @@ from itertools import zip_longest
 
 
 def read_objects_csv(filename):
-    """Takes a CSV with headings and converts each row to a dict. Useful for populating create_object()
+    """Takes a CSV with headings and converts each row to a dict. Useful for populating create_network()
 
     :param filename: Full filename of the CSV
     :type filename: str

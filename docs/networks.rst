@@ -11,6 +11,9 @@ as variables, that can be used in Access Policy rules etc.
    :noindex:
 
    .. automethod:: create_net_group
+   .. fp_output:: create_net_group_params
+   .. automethod:: create_network
+   .. fp_output:: create_network_params
    .. automethod:: get_net_groups
    .. fp_output:: get_net_groups
    .. fp_output:: get_net_groups_params
