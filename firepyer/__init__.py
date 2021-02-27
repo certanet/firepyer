@@ -6,7 +6,7 @@ from typing import List
 
 import requests
 
-from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerResourceNotFound, FirepyerUnreachableError
+from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
 __version__ = '0.0.3'

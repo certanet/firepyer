@@ -9,6 +9,12 @@ class FirepyerAuthError(FirepyerError):
     pass
 
 
+class FirepyerInvalidOption(FirepyerError):
+    """Raised when the value provided does not match the set of predefined options
+    """
+    pass
+
+
 class FirepyerResourceNotFound(FirepyerError):
     """Raised when an object by a given name or ID cannot be found in the FTD config
     """
