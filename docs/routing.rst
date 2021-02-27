@@ -19,6 +19,18 @@ BGP
    .. automethod:: set_bgp_settings
 
 
+OSPF
+---------
+
+.. py:currentmodule:: firepyer
+
+.. class:: Fdm
+   :noindex:
+
+   .. automethod:: get_ospf_settings
+   .. fp_output:: get_ospf_settings
+
+
 VRFs
 ---------
 
