@@ -304,7 +304,7 @@ class Fdm:
         :return: The object instance that has been created
         :rtype: dict
         """
-        resp = self.post_api(uri, json.dumps(instance_def))
+        resp = self.post_api(uri=uri, data=json.dumps(instance_def))
 
         if resp.status_code == 200:
             return resp.json()
@@ -439,7 +439,7 @@ class Fdm:
         """
         return self.get_api_single_item('devices/default/routing/bgpgeneralsettings')
 
-    def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None):
+    def set_bgp_general_settings(self, asn: str, name='BgpGeneralSettings', description=None, router_id=None) -> dict:
         """Set the device's general BGP settings
 
         :param asn: The AS number for the BGP process
@@ -450,8 +450,8 @@ class Fdm:
         :type description: str, optional
         :param router_id: A router ID for the BGP process, defaults to None
         :type router_id: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The BGPGeneralSettings object instance created
+        :rtype: dict
         """
         bgp_settings = {"name": name,
                         "description": description,
@@ -469,7 +469,7 @@ class Fdm:
                         # "asnotationDot": true,
                         "type": "bgpgeneralsettings"
                         }
-        return self.post_api('devices/default/routing/bgpgeneralsettings', data=json.dumps(bgp_settings))
+        return self._create_instance('devices/default/routing/bgpgeneralsettings', bgp_settings)
 
     def get_bgp_settings(self, vrf='Global'):
         """Get the BGP settings for a specifc VRF or the default (Global)
@@ -483,7 +483,7 @@ class Fdm:
         return self.get_api_single_item(f'devices/default/routing/virtualrouters/{vrf_id}/bgp')
 
     def set_bgp_settings(self, asn, name='', description=None, router_id=None, vrf='Global', af=4, auto_summary=False,
-                         neighbours=[], networks=[], default_originate=False):
+                         neighbours=[], networks=[], default_originate=False) -> dict:
         """Configures BGP settings for the give (or default) VRF
 
         :param asn: The AS Number of the BGP process, MUST be the same as in the BGPGeneralSettings
@@ -507,8 +507,8 @@ class Fdm:
         :type networks: list, optional
         :param default_originate: Enable or disable default originate for BGP, defaults to False
         :type default_originate: bool, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response|None
+        :return: The BGPSettings object instance created
+        :rtype: dict
         """
         if not name:
             name = f'{vrf}-BGPSettings'
@@ -547,9 +547,8 @@ class Fdm:
                         }
         bgp_settings.update(address_family)
 
-        vrf_id = self.get_vrfs(vrf)['id']
-        return self.post_api(f'devices/default/routing/virtualrouters/{vrf_id}/bgp',
-                             json.dumps(bgp_settings))
+        vrf_obj = self.get_vrfs(vrf, must_find=True)
+        return self._create_instance(f'devices/default/routing/virtualrouters/{vrf_obj["id"]}/bgp', bgp_settings)
 
     def get_ospf_settings(self, vrf='Global') -> List[dict]:
         """Get the OSPF settings for a specifc VRF or the default (Global)
@@ -682,7 +681,7 @@ class Fdm:
         else:
             return self.get_api_items(f'object/icmpv{af}ports?limit=0')
 
-    def create_icmp_port(self, name, type, code=None, af='4', description=None):
+    def create_icmp_port(self, name, type, code=None, af='4', description=None) -> dict:
         """Create an ICMPv4/6 Port object
 
         :param name: Name of the object
@@ -695,8 +694,8 @@ class Fdm:
         :type af: str, optional
         :param description: Description for the Port object, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response
+        :return: The ICMP Port object instance created
+        :rtype: dict
         """
         if code:
             code = code.upper()
@@ -710,7 +709,7 @@ class Fdm:
                        'name': name,
                        'type': f'icmpv{af}portobject'}
 
-        return self.post_api(f'object/icmpv{af}ports', json.dumps(icmp_object))
+        return self._create_instance(f'object/icmpv{af}ports', icmp_object)
 
     def get_port_obj_or_grp(self, name) -> dict:
         """Get a Port (tcp/udp/icmpv4/icmpv6) object or PortGroup by the given name
@@ -735,7 +734,7 @@ class Fdm:
                 break
         return port
 
-    def create_port_object(self, name: str, port: str, type: str, description: str = None):
+    def create_port_object(self, name: str, port: str, type: str, description: str = None) -> dict:
         """Create a TCP or UDP Port object to use in access rules
 
         :param name: Name of the Port object to be created
@@ -746,17 +745,17 @@ class Fdm:
         :type type: str
         :param description: A description for the Port, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response
+        :return: The TCP/UDP Port object instance created
+        :rtype: dict
         """
         port_object = {"name": name,
                        "description": description,
                        "port": port,
                        "type": f"{type.lower()}portobject"
                        }
-        return self.post_api(f'object/{type.lower()}ports', json.dumps(port_object))
+        return self._create_instance(f'object/{type.lower()}ports', port_object)
 
-    def create_port_group(self, name: str, objects: List[str], description: str = None):
+    def create_port_group(self, name: str, objects: List[str], description: str = None) -> dict:
         """Creates a PortGroup object, containing at least one existing tcp/udp/icmp Port or PortGroup
 
         :param name: Name of the PortGroup to create
@@ -765,12 +764,16 @@ class Fdm:
         :type objects: List[str]
         :param description: A description for the PortGroup, defaults to None
         :type description: str, optional
-        :return: The full requests response object or None if an error occurred
-        :rtype: Response
+        :return: The PortGroup object instance created
+        :rtype: dict
         """
         objects_for_group = []
         for obj_name in objects:
-            objects_for_group.append(self.get_port_obj_or_grp(obj_name))
+            obj = self.get_port_obj_or_grp(obj_name)
+            if obj:
+                objects_for_group.append(obj)
+            else:
+                raise FirepyerResourceNotFound(f'Object "{obj_name}" not does not exist!')
 
         return self.create_group(name, 'port', objects_for_group, description)
 
@@ -1050,7 +1053,7 @@ class Fdm:
         else:
             return self.get_api_items('object/syslogalerts?limit=0')
 
-    def create_syslog_server(self, ip, protocol='UDP', port='514', interface=None):
+    def create_syslog_server(self, ip, protocol='UDP', port='514', interface=None) -> dict:
         """Creates a SyslogServer to be able to send access rule and system logs to
 
         :param ip: IP address of the syslog server
@@ -1078,5 +1081,4 @@ class Fdm:
                          "port": port,
                          "type": "syslogserver"
                          }
-        return self.post_api('object/syslogalerts',
-                             data=json.dumps(syslog_object)).json()
+        return self._create_instance('object/syslogalerts', syslog_object)
