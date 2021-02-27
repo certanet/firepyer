@@ -4,7 +4,7 @@ Firepyer provides a way of interacting with Cisco Firepower devices via their RE
 The intended usage is to replace some of the tedious clicking tasks from the GUI, perform actions on a large number of devices or execute bulk imports of objects, rules etc.
 
 The following versions have been used in development (others should work but YMMV):
-- Python 3.9 (3.6+ should be fine)
+- Python 3.9 (3.8+ is required)
 - FTD 6.6.1-91
 
 Please see the brief instructions below on installing and using Firepyer and visit [the documentation](https://certanet.github.io/firepyer/) for a more comprehensive guide and examples.
