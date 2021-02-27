@@ -1,0 +1,12 @@
+ip='10.1.5.14'
+
+{'deviceInterface': None,
+ 'host': '10.1.5.14',
+ 'id': '0fe4932c-794e-11eb-b948-27bb3f4588ef',
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/syslogalerts/0fe4932c-794e-11eb-b948-27bb3f4588ef'},
+ 'name': '10.1.5.14:514',
+ 'port': '514',
+ 'protocol': 'UDP',
+ 'type': 'syslogserver',
+ 'useManagementInterface': True,
+ 'version': 'buzrvvrcvt6ly'}

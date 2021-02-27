@@ -1,0 +1,10 @@
+name='my-http-port', port='8001', type='tcp', description='My custom HTTP port 8001'
+
+{'description': 'My custom HTTP port 8001',
+ 'id': 'e10fd062-794b-11eb-b948-b5d9fac6117d',
+ 'isSystemDefined': False,
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/tcpports/e10fd062-794b-11eb-b948-b5d9fac6117d'},
+ 'name': 'my-http-port',
+ 'port': '8001',
+ 'type': 'tcpportobject',
+ 'version': 'bb4wded6dz4zt'}

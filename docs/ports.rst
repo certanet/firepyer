@@ -11,8 +11,11 @@ as variables, that can be used in Access Policy rules etc.
    :noindex:
 
    .. automethod:: create_icmp_port
+   .. fp_output:: create_icmp_port_params
    .. automethod:: create_port_group
+   .. fp_output:: create_port_group_params
    .. automethod:: create_port_object
+   .. fp_output:: create_port_object_params
    .. automethod:: get_icmp_ports
    .. fp_output:: get_icmp_ports
    .. fp_output:: get_icmp_ports_params

@@ -14,6 +14,7 @@ BGP
    .. automethod:: get_bgp_general_settings
    .. fp_output:: get_bgp_general_settings
    .. automethod:: set_bgp_general_settings
+   .. fp_output:: set_bgp_general_settings_params
    .. automethod:: get_bgp_settings
    .. fp_output:: get_bgp_settings
    .. automethod:: set_bgp_settings
