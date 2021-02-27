@@ -20,7 +20,7 @@ Alternatively, as this project is still in early development, the best place to 
 
 All functionailty for interacting with an FTD device is contained within the Fdm class and it’s methods. Authentication is taken care of transparently when calling a method, so this doesn’t need to be done explicilty.
 
-Import the Fdm class and instantiate an object, passing in your FTD hostname/IP, username and password (and ignoring SSL verification if using a self-signed cert):
+Import the Fdm class and instantiate an object, passing in your FTD hostname/IP, username and password (and ignoring SSL verification if using an untrusted/self-signed cert):
 
     >>> from firepyer import Fdm
     >>> fdm = Fdm(host='192.168.45.45', username='admin', password='Admin123', verify=False)
