@@ -1,4 +1,6 @@
 class FirepyerError(Exception):
+    """Raised if no more-specific exception applies, such as errors presented directly from FTD
+    """
     def __init__(self, message) -> None:
         super().__init__(message)
 
