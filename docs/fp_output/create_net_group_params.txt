@@ -1,0 +1,17 @@
+name='GROUP-HOST1', description='GROUP-HOST1', objects=['Host1-NIC1', 'Host1-NIC2']
+
+{'description': 'GROUP-HOST1',
+  'id': '26dbfd53-4db6-11eb-aab5-4dba63992bb3',
+  'isSystemDefined': False,
+  'links': {'self': 'https://192.168.133.7/api/fdm/latest/object/networkgroups/26dbfd53-4db6-11eb-aab5-4dba63992bb3'},
+  'name': 'GROUP-HOST1',
+  'objects': [{'id': '9f42dab3-4db5-11eb-aab5-19160f885ae8',
+               'name': 'Host1-NIC1',
+               'type': 'networkobject',
+               'version': 'jpfwstwwapru5'},
+              {'id': '9ffc3fa6-4db5-11eb-aab5-23e5ffdb3f0d',
+               'name': 'Host1-NIC2',
+               'type': 'networkobject',
+               'version': 'joq4kyvc4ztx5'}],
+  'type': 'networkobjectgroup',
+  'version': 'lcplbsj24ebva'}
