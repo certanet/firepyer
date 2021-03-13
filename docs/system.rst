@@ -18,7 +18,6 @@ Config Import/Export
    .. fp_output:: export_config_params
    .. automethod:: get_config_files
    .. fp_output:: get_config_files
-   
    .. automethod:: upload_config
    .. fp_output:: upload_config_params
 
@@ -77,6 +76,3 @@ Methods for performing system upgrades
    .. automethod:: get_upgrade_files
    .. fp_output:: get_upgrade_files
    .. automethod:: upload_upgrade
-
-
-   perform_upgrade
