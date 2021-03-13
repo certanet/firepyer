@@ -5,6 +5,7 @@ from time import sleep
 from typing import List
 
 import requests
+from requests.models import Response
 
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
@@ -296,27 +297,47 @@ class Fdm:
                        }
         return self._create_instance('object/networks', host_object)
 
-    def _create_instance(self, uri: str, instance_def: dict) -> dict:
-        """POST the JSON of the provided dict to the URI to create an object and return a dict of the created object instance
+    def _create_instance(self, uri: str, instance_def: dict, friendly_error: str = None) -> dict:
+        """POSTs the JSON of the provided dict to the URI to create an object and return dict of the created object or raise a friendly error
 
         :param uri: URI endpoint to send the request to
         :type uri: str
         :param instance_def: Definition of the object instance to create, the model is defined per object in the API
         :type instance_def: dict
+        :param friendly_error: High level name for task being performed if an error occurs, defaults to None
+        :type friendly_error: str, optional
+        :return: The object instance that has been created
+        :rtype: dict
+        """
+        resp = self.post_api(uri=uri, data=json.dumps(instance_def))
+        return self._check_post_response(resp=resp, friendly_error=friendly_error)
+
+    def _check_post_response(self, resp: Response, friendly_error: str = None) -> dict:
+        """Checks the reponse of a POST and returns a dict of the created object instance or raises a friendly error
+
+        :param resp: Response from the POST request to create an object
+        :type resp: Response
+        :param friendly_error: High level name for task being performed if an error occurs, defaults to None
+        :type friendly_error: str, optional
         :raises FirepyerError: If any server-side errors occur the description(s) will be passed through
         :return: The object instance that has been created
         :rtype: dict
         """
         resp = self.post_api(uri=uri, data=json.dumps(instance_def))
 
+        if not friendly_error:
+            friendly_error = 'create resource'
+
         if resp.status_code == 200:
             return resp.json()
-        elif resp.status_code == 422:
+        elif resp.status_code == 422 or 400:
             try:
                 err_msgs = [err['description'] for err in resp.json()['error']['messages']]
             except KeyError:
                 err_msgs = resp.json()
-            raise FirepyerError(f'Unable to create due to the following error(s): {err_msgs}')
+            raise FirepyerError(f'Unable to {friendly_error} due to the following error(s): {err_msgs}')
+        else:
+            raise FirepyerError(f'This isn\'t supposed to happen: {resp}')
 
     def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None) -> dict:
         """Creates a group of pre-existing Network or Port objects
