@@ -3,6 +3,27 @@ System Settings & Tasks
 
 General system settings.
 
+Config Import/Export
+--------------------
+
+.. py:currentmodule:: firepyer
+
+.. class:: Fdm
+   :noindex:
+
+   .. automethod:: upload_config
+   .. fp_output:: upload_config_params
+
+   get_config_files
+   delete_config_file
+   import_config
+   get_config_imports
+   export_config
+   download_config_file
+
+
+General
+-------
 
 .. py:currentmodule:: firepyer
 
@@ -21,3 +42,40 @@ General system settings.
    .. automethod:: send_command
    .. fp_output:: send_command_params
    .. automethod:: set_hostname
+
+
+Updates
+-------
+Methods for updating various rule files
+
+.. py:currentmodule:: firepyer
+
+.. class:: Fdm
+   :noindex:
+
+   .. automethod:: update_intrusion_rules
+   .. fp_output:: update_intrusion_rules
+   .. automethod:: update_vdb
+   .. automethod:: update_geolocation
+   .. automethod:: upload_intrusion_rule_file
+   .. automethod:: upload_geolocation_file
+   .. automethod:: upload_vdb_file
+   .. fp_output:: upload_vdb_file_params
+
+
+
+Upgrades
+--------
+Methods for performing system upgrades
+
+.. py:currentmodule:: firepyer
+
+.. class:: Fdm
+   :noindex:
+
+   .. automethod:: get_upgrade_files
+   .. fp_output:: get_upgrade_files
+   .. automethod:: upload_upgrade
+
+
+   perform_upgrade

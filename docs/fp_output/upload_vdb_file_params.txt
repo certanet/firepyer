@@ -1,0 +1,9 @@
+'uploads/Cisco_VDB_Fingerprint_Database-4.5.0-337.sh.REL.tar'
+
+{'checkSum': '231e053a4d9de54e7c03a6e64338c5039150a69c693907c6361a9f115f5e78a4f7f0f05ba98d1bd6f835f0d0b0504b582c70b0485b308b6095841e5de157b1bb',
+ 'fileName': 'Cisco_VDB_Fingerprint_Database-4.5.0-337.sh.REL.tar',
+ 'id': None,
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/action/updatevdbfromfile/null'},
+ 'name': 'Cisco_VDB_Fingerprint_Database-4.5.0-337.sh.REL.tar',
+ 'type': 'vdbfileupload',
+ 'version': None}
