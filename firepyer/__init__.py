@@ -847,11 +847,81 @@ class Fdm:
     def perform_upgrade(self):
         return self.post_api('action/upgrade')
 
+    def upload_vdb_file(self, filename: str) -> dict:
+        """Uploads a Vulnerability Database (VDB) update file
+
+        :param filename: Relative filepath and name of the VDB tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/updatevdbfromfile', filename=filename)
+
+    def get_geolocation_update_jobs(self) -> dict:
+        return self._get_rule_update_jobs('geolocation')
+
+    def get_intrusion_rule_update_jobs(self) -> dict:
+        return self._get_rule_update_jobs('sru')
+
+    def get_vdb_update_jobs(self) -> dict:
+        return self._get_rule_update_jobs('vdb')
+
+    def _get_rule_update_jobs(self, rule_type: str) -> dict:
+        return self.get_api_items(f'action/update{rule_type}')
+
+    def upload_intrusion_rule_file(self, filename: str) -> dict:
+        """Uploads an intrusion rule update (SRU) file
+
+        :param filename: Relative filepath and name of the SRU tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/updatesrufromfile', filename=filename)
+
+    def upload_geolocation_file(self, filename: str) -> dict:
+        """Uploads a Geolocation Database (GeoDB) update file
+
+        :param filename: Relative filepath and name of the GeoDB tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/updategeolocationfromfile', filename=filename)
+
     def _upload_file(self, url: str, filename: str) -> dict:
         # API parameter is called fileToUpload
         file = {'fileToUpload': open(filename, 'rb')}
         resp = self.post_api(uri=url, files=file)
         return self._check_post_response(resp=resp, friendly_error='upload file')
+
+    def update_vdb(self) -> dict:
+        """Immediately update the Vulnerability Database (VDB)
+
+        :return: VDB update job object
+        :rtype: dict
+        """
+        return self._update_rules('vdb')
+
+    def update_intrusion_rules(self) -> dict:
+        """Immediately update the intrusion ruleset (SRU)
+
+        :return: Rule update job object
+        :rtype: dict
+        """
+        return self._update_rules('sru')
+
+    def update_geolocation(self) -> dict:
+        """Immediately update the Geolocation Database (GeoDB)
+
+        :return: GeoDB update job object
+        :rtype: dict
+        """
+        return self._update_rules('geolocation')
+
+    def _update_rules(self, rule_type: str):
+        job = {"type": f"{rule_type}updateimmediate"}
+        return self._create_instance(uri=f'action/update{rule_type}', instance_def=job, friendly_error=f'initiate {rule_type} update')
 
     def get_system_info(self) -> dict:
         """Gets system information such as software versions, device model, serial number and management details
