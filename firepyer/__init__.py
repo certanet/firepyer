@@ -10,7 +10,7 @@ from requests.models import Response
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 class Fdm:
@@ -323,7 +323,6 @@ class Fdm:
         :return: The object instance that has been created
         :rtype: dict
         """
-        resp = self.post_api(uri=uri, data=json.dumps(instance_def))
 
         if not friendly_error:
             friendly_error = 'create resource'
