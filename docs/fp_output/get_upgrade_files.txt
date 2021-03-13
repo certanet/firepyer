@@ -1,0 +1,13 @@
+[{'fileSize': 1288104,
+  'id': 'dff28977-4d48-11eb-ad95-5dbe3d6f985f',
+  'links': {'self': 'https://192.168.133.7/api/fdm/latest/managedentity/upgradefiles/dff28977-4d48-11eb-ad95-5dbe3d6f985f'},
+  'rebootRequired': True,
+  'type': 'upgradefile',
+  'updateVersion': '6.6.1-91',
+  'upgradeCancelOnFailureDefault': None,
+  'upgradeFileName': 'Cisco_FTD_Upgrade-6.6.1-91.sh.REL.tar',
+  'upgradeFrom': '6.2.3',
+  'upgradeType': 'Cisco FTD Upgrade',
+  'uploadDate': 'Sat Jan 02 22:21:35 UTC 2021',
+  'user': 'admin',
+  'version': 'eujn2nhpfebcl'}]

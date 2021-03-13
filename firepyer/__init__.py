@@ -5,11 +5,12 @@ from time import sleep
 from typing import List
 
 import requests
+from requests.models import Response
 
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 class Fdm:
@@ -34,7 +35,7 @@ class Fdm:
         if not verify:
             requests.packages.urllib3.disable_warnings()
 
-    def api_call(self, uri, method, data=None, get_auth=True, files=None):
+    def api_call(self, uri, method, data=None, get_auth=True, files=None, stream=False):
         # Check for http allows passing in full URL e.g. from pagination next page link
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
@@ -51,7 +52,8 @@ class Fdm:
                                         data=data,
                                         headers=headers,
                                         verify=self.verify,
-                                        files=files)
+                                        files=files,
+                                        stream=stream)
             if response.status_code == 500:
                 raise FirepyerError('FTD presented a server error')
             elif response.status_code == 503:
@@ -68,8 +70,8 @@ class Fdm:
     def put_api(self, uri, data=None):
         return self.api_call(uri, 'PUT', data=data)
 
-    def get_api(self, uri, data=None):
-        return self.api_call(uri, 'GET', data=data)
+    def get_api(self, uri, data=None, stream=False):
+        return self.api_call(uri, 'GET', data=data, stream=stream)
 
     def get_api_items(self, uri, data=None):
         try:
@@ -212,7 +214,7 @@ class Fdm:
         :type name: str
         :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
         :type must_find: bool, optional
-        :raises FirepyerResourceNotFound: The resource with the given name could not be found
+        :raises FirepyerResourceNotFound: The resource with the given name could not be found and must_find is True
         :return: A dict of the given object if found, None if not
         :rtype: dict|None
         """
@@ -225,6 +227,8 @@ class Fdm:
 
         :param name: The name of the NetworkObject to find, defaults to ''
         :type name: str, optional
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
         :return: A list of all NetworkObjects if no name is provided, or a dict of the single NetworkObject with the given name
         :rtype: list|dict
         """
@@ -293,27 +297,75 @@ class Fdm:
                        }
         return self._create_instance('object/networks', host_object)
 
-    def _create_instance(self, uri: str, instance_def: dict) -> dict:
-        """POST the JSON of the provided dict to the URI to create an object and return a dict of the created object instance
+    def delete_network(self, net_id: str) -> bool:
+        """Delete a NetworkObject
+
+        :param net_id: NetworkObject id
+        :type net_id: str
+        :raises FirepyerResourceNotFound: If a NetworkObject with the given id does not exist
+        :return: True if the object is successfully deleted
+        :rtype: bool
+        """
+        return self._delete_instance('object/networks', net_id)
+
+    def _create_instance(self, uri: str, instance_def: dict, friendly_error: str = None) -> dict:
+        """POSTs the JSON of the provided dict to the URI to create an object and return dict of the created object or raise a friendly error
 
         :param uri: URI endpoint to send the request to
         :type uri: str
         :param instance_def: Definition of the object instance to create, the model is defined per object in the API
         :type instance_def: dict
-        :raises FirepyerError: If any server-side errors occur the description(s) will be passed through
+        :param friendly_error: High level name for task being performed if an error occurs, defaults to None
+        :type friendly_error: str, optional
         :return: The object instance that has been created
         :rtype: dict
         """
         resp = self.post_api(uri=uri, data=json.dumps(instance_def))
+        return self._check_post_response(resp=resp, friendly_error=friendly_error)
+
+    def _delete_instance(self, uri: str, object_id: str) -> bool:
+        resp = self.api_call(uri=f'{uri}/{object_id}', method='DELETE')
+
+        if resp.status_code == 204:
+            return True
+        elif resp.status_code == 422 or 400:
+            try:
+                errs = [err for err in resp.json()['error']['messages']]
+                if 'invalidUuid' in [code.get('code') for code in errs]:
+                    raise FirepyerResourceNotFound(f'Could not find object "{object_id}" to delete')
+                else:
+                    errs = [err.get("description") for err in errs]
+            except KeyError:
+                errs = resp.json()
+            raise FirepyerError(f'Unable to delete object "{object_id}" due to the following error(s): {errs}')
+        else:
+            raise FirepyerError(f'This isn\'t supposed to happen: {resp}')
+
+    def _check_post_response(self, resp: Response, friendly_error: str = None) -> dict:
+        """Checks the reponse of a POST and returns a dict of the created object instance or raises a friendly error
+
+        :param resp: Response from the POST request to create an object
+        :type resp: Response
+        :param friendly_error: High level name for task being performed if an error occurs, defaults to None
+        :type friendly_error: str, optional
+        :raises FirepyerError: If any server-side errors occur the description(s) will be passed through
+        :return: The object instance that has been created
+        :rtype: dict
+        """
+
+        if not friendly_error:
+            friendly_error = 'create resource'
 
         if resp.status_code == 200:
             return resp.json()
-        elif resp.status_code == 422:
+        elif resp.status_code == 422 or 400:
             try:
                 err_msgs = [err['description'] for err in resp.json()['error']['messages']]
             except KeyError:
                 err_msgs = resp.json()
-            raise FirepyerError(f'Unable to create due to the following error(s): {err_msgs}')
+            raise FirepyerError(f'Unable to {friendly_error} due to the following error(s): {err_msgs}')
+        else:
+            raise FirepyerError(f'This isn\'t supposed to happen: {resp}')
 
     def create_group(self, name: str, group_type: str, objects_for_group: List[dict], description: str = None) -> dict:
         """Creates a group of pre-existing Network or Port objects
@@ -360,6 +412,17 @@ class Fdm:
 
         return self.create_group(name, 'network', objects_for_group, description)
 
+    def delete_network_group(self, grp_id: str) -> bool:
+        """Delete a NetworkGroup
+
+        :param grp_id: NetworkGroup id
+        :type grp_id: str
+        :raises FirepyerResourceNotFound: If a NetworkGroup with the given id does not exist
+        :return: True if the object is successfully deleted
+        :rtype: bool
+        """
+        return self._delete_instance('object/networkgroups', grp_id)
+
     def get_pending_changes(self) -> list:
         """Gets any configuration changes that have not yet been deployed
 
@@ -382,7 +445,7 @@ class Fdm:
 
         :param deploy_id: The ID of the Deployment task to check
         :type deploy_id: str
-        :raises ResourceNotFound: If the deployment ID does not exist
+        :raises FirepyerResourceNotFound: If the deployment ID does not exist
         :return: The status of the deployment, one of either ['QUEUED', 'DEPLOYING', DEPLOYED', 'FAILED']
         :rtype: str
         """
@@ -820,21 +883,190 @@ class Fdm:
         return self.put_api(f'devicesettings/default/devicehostnames/{hostname_id}',
                             data=json.dumps(new_hostname))
 
-    def get_upgrade_files(self):
-        return self.get_api('managedentity/upgradefiles').json()
+    def get_upgrade_files(self) -> List[dict]:
+        """Gets upgrade files that have been uploaded to the FTD appliance
+
+        :return: List of upgrade file objects in dict form
+        :rtype: List[dict]
+        """
+        return self.get_api_items('managedentity/upgradefiles')
 
     def get_upgrade_file(self, file_id):
         return self.get_api(f'managedentity/upgradefiles/{file_id}').json()
 
-    def upload_upgrade(self, filename):
-        # API parameter is called fileToUpload
-        files = {'fileToUpload': open(filename, 'rb')}
+    def upload_upgrade(self, filename: str) -> dict:
+        """Uploads an FTD Upgrade file
 
-        return self.post_api('action/uploadupgrade',
-                             files=files)
+        :param filename: Relative filepath and name of the FTD Upgrade tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/uploadupgrade', filename=filename)
 
     def perform_upgrade(self):
         return self.post_api('action/upgrade')
+
+    def upload_vdb_file(self, filename: str) -> dict:
+        """Uploads a Vulnerability Database (VDB) update file
+
+        :param filename: Relative filepath and name of the VDB tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/updatevdbfromfile', filename=filename)
+
+    def get_geolocation_update_jobs(self) -> dict:
+        return self._get_rule_update_jobs('geolocation')
+
+    def get_intrusion_rule_update_jobs(self) -> dict:
+        return self._get_rule_update_jobs('sru')
+
+    def get_vdb_update_jobs(self) -> dict:
+        return self._get_rule_update_jobs('vdb')
+
+    def _get_rule_update_jobs(self, rule_type: str) -> dict:
+        return self.get_api_items(f'action/update{rule_type}')
+
+    def upload_intrusion_rule_file(self, filename: str) -> dict:
+        """Uploads an intrusion rule update (SRU) file
+
+        :param filename: Relative filepath and name of the SRU tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/updatesrufromfile', filename=filename)
+
+    def upload_geolocation_file(self, filename: str) -> dict:
+        """Uploads a Geolocation Database (GeoDB) update file
+
+        :param filename: Relative filepath and name of the GeoDB tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/updategeolocationfromfile', filename=filename)
+
+    def _upload_file(self, url: str, filename: str) -> dict:
+        # API parameter is called fileToUpload
+        file = {'fileToUpload': open(filename, 'rb')}
+        resp = self.post_api(uri=url, files=file)
+        return self._check_post_response(resp=resp, friendly_error='upload file')
+
+    def update_vdb(self) -> dict:
+        """Immediately update the Vulnerability Database (VDB)
+
+        :return: VDB update job object
+        :rtype: dict
+        """
+        return self._update_rules('vdb')
+
+    def update_intrusion_rules(self) -> dict:
+        """Immediately update the intrusion ruleset (SRU)
+
+        :return: Rule update job object
+        :rtype: dict
+        """
+        return self._update_rules('sru')
+
+    def update_geolocation(self) -> dict:
+        """Immediately update the Geolocation Database (GeoDB)
+
+        :return: GeoDB update job object
+        :rtype: dict
+        """
+        return self._update_rules('geolocation')
+
+    def _update_rules(self, rule_type: str):
+        job = {"type": f"{rule_type}updateimmediate"}
+        return self._create_instance(uri=f'action/update{rule_type}', instance_def=job, friendly_error=f'initiate {rule_type} update')
+
+    def upload_config(self, filename: str) -> dict:
+        """Upload a JSON config file, usually a .txt or .zip previously exported from an FTD appliance
+
+        :param filename: Relative filepath and name of the config file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/uploadconfigfile', filename=filename)
+
+    def download_config_file(self, remote_filename: str, local_filename: str = None) -> bool:
+        """Downloads a config file that has been exported (stored within FTD)
+
+        :param remote_filename: Name of the config file on the FTD (diskFileName) or the export job ID
+        :type remote_filename: str
+        :param local_filename: Filename to save to the config file to locally, defaults to the remote filename
+        :type local_filename: str, optional
+        :raises FirepyerError: If unable to download the config file e.g. the filename does not exist or another error occurs
+        :return: True if the config is successfully downloaded
+        :rtype: bool
+        """
+        response = self.get_api(f'action/downloadconfigfile/{remote_filename}', stream=True)
+
+        if 'application/octet-stream' in response.headers.get('Content-Type'):
+            if not local_filename:
+                local_filename = remote_filename
+            with open(local_filename, "wb") as out_file:
+                for chunk in response.iter_content(chunk_size=512):
+                    if chunk:
+                        out_file.write(chunk)
+            return True
+        else:
+            raise FirepyerError('Failed to download config file! Check the file exists in FTD')
+
+    def get_config_files(self) -> List[dict]:
+        """Gets the imported/exported config objects stored in FTD
+
+        :return: List of each config file object
+        :rtype: List[dict]
+        """
+        return self.get_api_items('action/configfiles')
+
+    def delete_config_file(self, filename: str) -> bool:
+        """Deletes an exported/imported config file stored in FTD
+
+        :param filename: Name of the config file object - "diskFileName"
+        :type filename: str
+        :raises FirepyerResourceNotFound: If a config with the given filename does not exist
+        :return: True if the file is successfully deleted
+        :rtype: bool
+        """
+        return self._delete_instance(f'action/configfiles/{filename}')
+
+    def apply_config_import(self, remote_filename: str) -> dict:
+        """Apply a JSON config file that has already been imported
+
+        :param remote_filename: Filename of the config within the FTD system
+        :type remote_filename: str
+        :return: Config import job object
+        :rtype: dict
+        """
+        import_job = {"type": "scheduleconfigimport",
+                      "diskFileName": remote_filename}
+        return self._create_instance('action/configimport', instance_def=import_job)
+
+    def get_config_imports(self, id: str = None):
+        if id:
+            return self.get_api(f'jobs/configimportstatus/{id}').json()
+        else:
+            return self.get_api_items('jobs/configimportstatus')
+
+    def export_config(self, config_name: str = None) -> dict:
+        """Creates a job to save the current config as a JSON file in the FTD appliance. Once the job is complete the saved file can be downloaded
+
+        :param config_name: Optional name to store the config file as, defaults to "Exported-at-YYYY-MM-DD-HH-MM-SSZ.zip"
+        :type config_name: str, optional
+        :return: Config export job object
+        :rtype: dict
+        """
+        export_job = {"type": "scheduleconfigexport",
+                      "diskFileName": config_name,
+                      "doNotEncrypt": True,
+                      "deployedObjectsOnly": True}
+        return self._create_instance('action/configexport', instance_def=export_job)
 
     def get_system_info(self) -> dict:
         """Gets system information such as software versions, device model, serial number and management details
@@ -1008,6 +1240,18 @@ class Fdm:
 
         policy_id = self.get_acp()['id']
         return self._create_instance(f'policy/accesspolicies/{policy_id}/accessrules', rule)
+
+    def delete_access_rule(self, rule_id: str) -> bool:
+        """Delete an AccessRule
+
+        :param rule_id: AccessRule id
+        :type rule_id: str
+        :raises FirepyerResourceNotFound: If an AccessRule with the given id does not exist
+        :return: True if the object is successfully deleted
+        :rtype: bool
+        """
+        policy_id = self.get_acp()['id']
+        return self._delete_instance(f'policy/accesspolicies/{policy_id}/accessrules', rule_id)
 
     def get_smartlicense(self):
         return self.get_api_items('license/smartlicenses')
