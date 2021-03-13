@@ -953,6 +953,81 @@ class Fdm:
         """
         return self._upload_file(url='action/uploadconfigfile', filename=filename)
 
+    def download_config_file(self, remote_filename: str, local_filename: str = None) -> bool:
+        """Downloads a config file that has been exported (stored within FTD)
+
+        :param remote_filename: Name of the config file on the FTD (diskFileName) or the export job ID
+        :type remote_filename: str
+        :param local_filename: Filename to save to the config file to locally, defaults to the remote filename
+        :type local_filename: str, optional
+        :raises FirepyerError: If unable to download the config file e.g. the filename does not exist or another error occurs
+        :return: True if the config is successfully downloaded
+        :rtype: bool
+        """
+        response = self.get_api(f'action/downloadconfigfile/{remote_filename}', stream=True)
+
+        if 'application/octet-stream' in response.headers.get('Content-Type'):
+            if not local_filename:
+                local_filename = remote_filename
+            with open(local_filename, "wb") as out_file:
+                for chunk in response.iter_content(chunk_size=512):
+                    if chunk:
+                        out_file.write(chunk)
+            return True
+        else:
+            raise FirepyerError('Failed to download config file! Check the file exists in FTD')
+
+    def get_config_files(self) -> List[dict]:
+        """Gets the imported/exported config objects stored in FTD
+
+        :return: List of each config file object
+        :rtype: List[dict]
+        """
+        return self.get_api_items('action/configfiles')
+
+    def delete_config_file(self, filename: str) -> bool:
+        """Deletes an exported/imported config file stored in FTD
+
+        :param filename: Name of the config file object - "diskFileName"
+        :type filename: str
+        :raises FirepyerResourceNotFound: If a config with the given filename does not exist
+        :return: True if the file is successfully deleted
+        :rtype: bool
+        """
+        return self._delete_instance(f'action/configfiles/{filename}')
+
+    def apply_config_import(self, remote_filename: str) -> dict:
+        """Apply a JSON config file that has already been imported
+
+        :param remote_filename: Filename of the config within the FTD system
+        :type remote_filename: str
+        :return: Config import job object
+        :rtype: dict
+        """
+        import_job = {"type": "scheduleconfigimport",
+                      "diskFileName": remote_filename}
+        return self._create_instance('action/configimport', instance_def=import_job)
+
+    def get_config_imports(self, id: str = None):
+        if id:
+            return self.get_api(f'jobs/configimportstatus/{id}').json()
+        else:
+            return self.get_api_items('jobs/configimportstatus')
+
+    def export_config(self, config_name: str = None) -> dict:
+        """Creates a job to save the current config as a JSON file in the FTD appliance. Once the job is complete the saved file can be downloaded
+
+        :param config_name: Optional name to store the config file as, defaults to "Exported-at-YYYY-MM-DD-HH-MM-SSZ.zip"
+        :type config_name: str, optional
+        :return: Config export job object
+        :rtype: dict
+        """
+        export_job = {"type": "scheduleconfigexport",
+                      "diskFileName": config_name,
+                      "doNotEncrypt": True,
+                      "deployedObjectsOnly": True}
+        return self._create_instance('action/configexport', instance_def=export_job)
+
     def get_system_info(self) -> dict:
         """Gets system information such as software versions, device model, serial number and management details
 

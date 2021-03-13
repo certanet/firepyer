@@ -1,0 +1,12 @@
+[{'dateModified': '2021-03-13 19:20:26Z',
+  'diskFileName': 'config-with-ospf.zip',
+  'id': 'default',
+  'links': {'self': 'https://192.168.133.7/api/fdm/latest/action/configfiles/default'},
+  'sizeBytes': 11374,
+  'type': 'configimportexportfileinfo'},
+ {'dateModified': '2021-03-13 16:24:10Z',
+  'diskFileName': 'full_config-1.txt',
+  'id': 'default',
+  'links': {'self': 'https://192.168.133.7/api/fdm/latest/action/configfiles/default'},
+  'sizeBytes': 69658,
+  'type': 'configimportexportfileinfo'}]

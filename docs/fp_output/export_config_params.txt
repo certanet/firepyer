@@ -1,0 +1,18 @@
+'config-with-ospf.zip'
+
+{'configExportType': 'FULL_EXPORT',
+ 'deployedObjectsOnly': True,
+ 'diskFileName': 'config-with-ospf.zip',
+ 'doNotEncrypt': True,
+ 'encryptionKey': None,
+ 'entityIds': None,
+ 'forceOperation': False,
+ 'id': '264f7ef6-8431-11eb-ab2b-31e0e0bf5eef',
+ 'ipAddress': '192.168.133.100',
+ 'jobHistoryUuid': '266020c7-8431-11eb-ab2b-41e10f130001',
+ 'jobName': 'Config Export',
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/action/configexport/264f7ef6-8431-11eb-ab2b-31e0e0bf5eef'},
+ 'scheduleType': 'IMMEDIATE',
+ 'type': 'scheduleconfigexport',
+ 'user': 'admin',
+ 'version': 'i7flijevvkqzu'}

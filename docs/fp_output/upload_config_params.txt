@@ -1,0 +1,8 @@
+'full_config-1.txt'
+
+{'dateModified': '2021-03-13 16:24:10Z',
+ 'diskFileName': 'full_config-1.txt',
+ 'id': 'default',
+ 'links': {'self': 'https://192.168.133.7/api/fdm/latest/action/uploadconfigfile/default'},
+ 'sizeBytes': 69658,
+ 'type': 'configimportexportfileinfo'}
