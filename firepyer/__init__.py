@@ -923,6 +923,16 @@ class Fdm:
         job = {"type": f"{rule_type}updateimmediate"}
         return self._create_instance(uri=f'action/update{rule_type}', instance_def=job, friendly_error=f'initiate {rule_type} update')
 
+    def upload_config(self, filename: str) -> dict:
+        """Upload a JSON config file, usually a .txt or .zip previously exported from an FTD appliance
+
+        :param filename: Relative filepath and name of the config file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/uploadconfigfile', filename=filename)
+
     def get_system_info(self) -> dict:
         """Gets system information such as software versions, device model, serial number and management details
 
