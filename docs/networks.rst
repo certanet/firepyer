@@ -14,6 +14,8 @@ as variables, that can be used in Access Policy rules etc.
    .. fp_output:: create_net_group_params
    .. automethod:: create_network
    .. fp_output:: create_network_params
+   .. automethod:: delete_network
+   .. automethod:: delete_network_group
    .. automethod:: get_net_groups
    .. fp_output:: get_net_groups
    .. fp_output:: get_net_groups_params

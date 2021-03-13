@@ -297,6 +297,17 @@ class Fdm:
                        }
         return self._create_instance('object/networks', host_object)
 
+    def delete_network(self, net_id: str) -> bool:
+        """Delete a NetworkObject
+
+        :param net_id: NetworkObject id
+        :type net_id: str
+        :raises FirepyerResourceNotFound: If a NetworkObject with the given id does not exist
+        :return: True if the object is successfully deleted
+        :rtype: bool
+        """
+        return self._delete_instance('object/networks', net_id)
+
     def _create_instance(self, uri: str, instance_def: dict, friendly_error: str = None) -> dict:
         """POSTs the JSON of the provided dict to the URI to create an object and return dict of the created object or raise a friendly error
 
@@ -311,6 +322,24 @@ class Fdm:
         """
         resp = self.post_api(uri=uri, data=json.dumps(instance_def))
         return self._check_post_response(resp=resp, friendly_error=friendly_error)
+
+    def _delete_instance(self, uri: str, object_id: str) -> bool:
+        resp = self.api_call(uri=f'{uri}/{object_id}', method='DELETE')
+
+        if resp.status_code == 204:
+            return True
+        elif resp.status_code == 422 or 400:
+            try:
+                errs = [err for err in resp.json()['error']['messages']]
+                if 'invalidUuid' in [code.get('code') for code in errs]:
+                    raise FirepyerResourceNotFound(f'Could not find object "{object_id}" to delete')
+                else:
+                    errs = [err.get("description") for err in errs]
+            except KeyError:
+                errs = resp.json()
+            raise FirepyerError(f'Unable to delete object "{object_id}" due to the following error(s): {errs}')
+        else:
+            raise FirepyerError(f'This isn\'t supposed to happen: {resp}')
 
     def _check_post_response(self, resp: Response, friendly_error: str = None) -> dict:
         """Checks the reponse of a POST and returns a dict of the created object instance or raises a friendly error
@@ -383,6 +412,17 @@ class Fdm:
 
         return self.create_group(name, 'network', objects_for_group, description)
 
+    def delete_network_group(self, grp_id: str) -> bool:
+        """Delete a NetworkGroup
+
+        :param grp_id: NetworkGroup id
+        :type grp_id: str
+        :raises FirepyerResourceNotFound: If a NetworkGroup with the given id does not exist
+        :return: True if the object is successfully deleted
+        :rtype: bool
+        """
+        return self._delete_instance('object/networkgroups', grp_id)
+
     def get_pending_changes(self) -> list:
         """Gets any configuration changes that have not yet been deployed
 
@@ -405,7 +445,7 @@ class Fdm:
 
         :param deploy_id: The ID of the Deployment task to check
         :type deploy_id: str
-        :raises ResourceNotFound: If the deployment ID does not exist
+        :raises FirepyerResourceNotFound: If the deployment ID does not exist
         :return: The status of the deployment, one of either ['QUEUED', 'DEPLOYING', DEPLOYED', 'FAILED']
         :rtype: str
         """
@@ -1200,6 +1240,18 @@ class Fdm:
 
         policy_id = self.get_acp()['id']
         return self._create_instance(f'policy/accesspolicies/{policy_id}/accessrules', rule)
+
+    def delete_access_rule(self, rule_id: str) -> bool:
+        """Delete an AccessRule
+
+        :param rule_id: AccessRule id
+        :type rule_id: str
+        :raises FirepyerResourceNotFound: If an AccessRule with the given id does not exist
+        :return: True if the object is successfully deleted
+        :rtype: bool
+        """
+        policy_id = self.get_acp()['id']
+        return self._delete_instance(f'policy/accesspolicies/{policy_id}/accessrules', rule_id)
 
     def get_smartlicense(self):
         return self.get_api_items('license/smartlicenses')
