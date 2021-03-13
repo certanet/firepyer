@@ -26,5 +26,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
 )
