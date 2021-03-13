@@ -34,7 +34,7 @@ class Fdm:
         if not verify:
             requests.packages.urllib3.disable_warnings()
 
-    def api_call(self, uri, method, data=None, get_auth=True, files=None):
+    def api_call(self, uri, method, data=None, get_auth=True, files=None, stream=False):
         # Check for http allows passing in full URL e.g. from pagination next page link
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
@@ -51,7 +51,8 @@ class Fdm:
                                         data=data,
                                         headers=headers,
                                         verify=self.verify,
-                                        files=files)
+                                        files=files,
+                                        stream=stream)
             if response.status_code == 500:
                 raise FirepyerError('FTD presented a server error')
             elif response.status_code == 503:
@@ -68,8 +69,8 @@ class Fdm:
     def put_api(self, uri, data=None):
         return self.api_call(uri, 'PUT', data=data)
 
-    def get_api(self, uri, data=None):
-        return self.api_call(uri, 'GET', data=data)
+    def get_api(self, uri, data=None, stream=False):
+        return self.api_call(uri, 'GET', data=data, stream=stream)
 
     def get_api_items(self, uri, data=None):
         try:
@@ -212,7 +213,7 @@ class Fdm:
         :type name: str
         :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
         :type must_find: bool, optional
-        :raises FirepyerResourceNotFound: The resource with the given name could not be found
+        :raises FirepyerResourceNotFound: The resource with the given name could not be found and must_find is True
         :return: A dict of the given object if found, None if not
         :rtype: dict|None
         """
@@ -225,6 +226,8 @@ class Fdm:
 
         :param name: The name of the NetworkObject to find, defaults to ''
         :type name: str, optional
+        :param must_find: Specifies if an exception should be raised if the resource isn't found, defaults to False
+        :type must_find: bool, optional
         :return: A list of all NetworkObjects if no name is provided, or a dict of the single NetworkObject with the given name
         :rtype: list|dict
         """
