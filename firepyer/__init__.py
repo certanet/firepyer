@@ -823,21 +823,35 @@ class Fdm:
         return self.put_api(f'devicesettings/default/devicehostnames/{hostname_id}',
                             data=json.dumps(new_hostname))
 
-    def get_upgrade_files(self):
-        return self.get_api('managedentity/upgradefiles').json()
+    def get_upgrade_files(self) -> List[dict]:
+        """Gets upgrade files that have been uploaded to the FTD appliance
+
+        :return: List of upgrade file objects in dict form
+        :rtype: List[dict]
+        """
+        return self.get_api_items('managedentity/upgradefiles')
 
     def get_upgrade_file(self, file_id):
         return self.get_api(f'managedentity/upgradefiles/{file_id}').json()
 
-    def upload_upgrade(self, filename):
-        # API parameter is called fileToUpload
-        files = {'fileToUpload': open(filename, 'rb')}
+    def upload_upgrade(self, filename: str) -> dict:
+        """Uploads an FTD Upgrade file
 
-        return self.post_api('action/uploadupgrade',
-                             files=files)
+        :param filename: Relative filepath and name of the FTD Upgrade tar file to upload
+        :type filename: str
+        :return: Uploaded file object
+        :rtype: dict
+        """
+        return self._upload_file(url='action/uploadupgrade', filename=filename)
 
     def perform_upgrade(self):
         return self.post_api('action/upgrade')
+
+    def _upload_file(self, url: str, filename: str) -> dict:
+        # API parameter is called fileToUpload
+        file = {'fileToUpload': open(filename, 'rb')}
+        resp = self.post_api(uri=url, files=file)
+        return self._check_post_response(resp=resp, friendly_error='upload file')
 
     def get_system_info(self) -> dict:
         """Gets system information such as software versions, device model, serial number and management details
