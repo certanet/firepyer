@@ -11,15 +11,16 @@ Config Import/Export
 .. class:: Fdm
    :noindex:
 
+   .. automethod:: apply_config_import
+   .. automethod:: delete_config_file
+   .. automethod:: download_config_file
+   .. automethod:: export_config
+   .. fp_output:: export_config_params
+   .. automethod:: get_config_files
+   .. fp_output:: get_config_files
+   
    .. automethod:: upload_config
    .. fp_output:: upload_config_params
-
-   get_config_files
-   delete_config_file
-   import_config
-   get_config_imports
-   export_config
-   download_config_file
 
 
 General
