@@ -1034,7 +1034,7 @@ class Fdm:
         :return: True if the file is successfully deleted
         :rtype: bool
         """
-        return self._delete_instance(f'action/configfiles/{filename}')
+        return self._delete_instance('action/configfiles', filename)
 
     def apply_config_import(self, remote_filename: str) -> dict:
         """Apply a JSON config file that has already been imported
