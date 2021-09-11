@@ -846,7 +846,18 @@ class Fdm:
     def get_initial_provision(self) -> dict:
         return self.get_api_single_item('devices/default/action/provision')
 
-    def set_initial_provision(self, new_password, current_password='Admin123'):
+    def set_initial_provision(self, new_password: str, current_password: str = None):
+        """Completes the out-of-box Initial Provisioning by accepting EULA and setting admin password
+
+        :param new_password: The new admin password to set
+        :type new_password: str
+        :param current_password: The current admin password, if left as None self.password is used
+        :type current_password: str, optional
+        :return: The IntitialProvision object as a dict
+        :rtype: dict
+        """
+        if current_password is None:
+            current_password = self.password
         provision = self.get_initial_provision()
         provision["acceptEULA"] = True
         provision["currentPassword"] = current_password
@@ -1039,16 +1050,19 @@ class Fdm:
         """
         return self._delete_instance('action/configfiles', filename)
 
-    def apply_config_import(self, remote_filename: str) -> dict:
+    def apply_config_import(self, remote_filename: str, auto_deploy: bool = True) -> dict:
         """Apply a JSON config file that has already been imported
 
         :param remote_filename: Filename of the config within the FTD system
         :type remote_filename: str
+        :param auto_deploy: If the imported config should be deployed to the device or just sit in pending
+        :type auto_deploy: bool
         :return: Config import job object
         :rtype: dict
         """
         import_job = {"type": "scheduleconfigimport",
-                      "diskFileName": remote_filename}
+                      "diskFileName": remote_filename,
+                      "autoDeploy": auto_deploy}
         return self._create_instance('action/configimport', instance_def=import_job)
 
     def get_config_imports(self, id: str = None):
