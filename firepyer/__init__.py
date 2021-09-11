@@ -10,7 +10,7 @@ from requests.models import Response
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 class Fdm:
@@ -57,7 +57,7 @@ class Fdm:
             if response.status_code == 500:
                 raise FirepyerError('FTD presented a server error')
             elif response.status_code == 503:
-                raise FirepyerError('FTD responded, but service unavailable, may still be booting')
+                raise FirepyerError('FTD responded, but service unavailable (503), may still be booting')
             return response
         except requests.exceptions.SSLError:
             raise FirepyerUnreachableError(f'Failed to connect to {self.ftd_host} due to an SSL error - check certificate or disable verification')
@@ -189,6 +189,10 @@ class Fdm:
 
     def get_paged_items(self, uri: str) -> list:
         response = self.get_api(uri).json()
+        all_items = response.get('items')
+        # TODO catch this error
+        if all_items is None:
+            pass
         all_items = response['items']
         next_url = response['paging']['next']
 
@@ -462,11 +466,14 @@ class Fdm:
     def deploy_config(self):
         """Checks if there's any pending config changes and deploys them, waits until deploy finishes to return
 
-        :return: True if deployment was successful, False if deployment failed or not required
+        :return: True if deployment was successful or not required, False if deployment failed
         :rtype: bool
         """
         if self.get_pending_changes():
             deployment_id = self.deploy_now()
+            if deployment_id is None:
+                # Unable to deploy
+                return False
             state = self.get_deployment_status(deployment_id)
             while state != 'DEPLOYED' and state != 'FAILED':
                 sleep(10)
@@ -477,7 +484,7 @@ class Fdm:
                 return False
         else:
             # Nothing to deploy
-            return False
+            return True
 
     def get_vrfs(self, name='', must_find: bool = False):
         """Gets all VRFs or a single VRF if a name is provided
@@ -843,7 +850,18 @@ class Fdm:
     def get_initial_provision(self) -> dict:
         return self.get_api_single_item('devices/default/action/provision')
 
-    def set_initial_provision(self, new_password, current_password='Admin123'):
+    def set_initial_provision(self, new_password: str, current_password: str = None):
+        """Completes the out-of-box Initial Provisioning by accepting EULA and setting admin password
+
+        :param new_password: The new admin password to set
+        :type new_password: str
+        :param current_password: The current admin password, if left as None self.password is used
+        :type current_password: str, optional
+        :return: The IntitialProvision object as a dict
+        :rtype: dict
+        """
+        if current_password is None:
+            current_password = self.password
         provision = self.get_initial_provision()
         provision["acceptEULA"] = True
         provision["currentPassword"] = current_password
@@ -1034,18 +1052,21 @@ class Fdm:
         :return: True if the file is successfully deleted
         :rtype: bool
         """
-        return self._delete_instance(f'action/configfiles/{filename}')
+        return self._delete_instance('action/configfiles', filename)
 
-    def apply_config_import(self, remote_filename: str) -> dict:
+    def apply_config_import(self, remote_filename: str, auto_deploy: bool = True) -> dict:
         """Apply a JSON config file that has already been imported
 
         :param remote_filename: Filename of the config within the FTD system
         :type remote_filename: str
+        :param auto_deploy: If the imported config should be deployed to the device or just sit in pending
+        :type auto_deploy: bool
         :return: Config import job object
         :rtype: dict
         """
         import_job = {"type": "scheduleconfigimport",
-                      "diskFileName": remote_filename}
+                      "diskFileName": remote_filename,
+                      "autoDeploy": auto_deploy}
         return self._create_instance('action/configimport', instance_def=import_job)
 
     def get_config_imports(self, id: str = None):
@@ -1092,6 +1113,7 @@ class Fdm:
     def create_security_zone(self, name, description='', interfaces=[], phy_interfaces=[], mode='ROUTED'):
         """
         Creates a security zone
+
         :param name: str The name of the Security Zone
         :param description: str Description
         :param interfaces: list The logical names of any Interfaces to be part of this Security Zone e.g. inside
@@ -1270,6 +1292,52 @@ class Fdm:
         return self.post_api('license/smartlicenses',
                              data=json.dumps(license_object)).json()
 
+    def get_smart_agent_connection(self):
+        """Gets the Smart License Agent Connection which will have a type of EVALUATION, REGISTER or UNIVERSAL_PLR
+
+        :return: The SmartAgentConnection object in dict form
+        :rtype: dict
+        """
+        return self.get_api_single_item('license/smartagentconnections')
+
+    def set_smart_agent_connection(self, smart_agent_connection: dict, connection_type: str):
+        """Sets the Smart License Agent Connection type
+
+        :param smart_agent_connection: A dict representation of the SmartAgentConnection object to modify
+        :type smart_agent_connection: dict
+        :param connection_type: The connection type to use, either "EVALUATION", "REGISTER" or "UNIVERSAL_PLR"
+        :type connection_type: str
+        :return: The updated SmartAgentConnection
+        :rtype: dict
+        """
+        connection_type = connection_type.upper()
+        if connection_type not in ["EVALUATION", "REGISTER", "UNIVERSAL_PLR"]:
+            raise FirepyerInvalidOption('"connection_type" should be one of "EVALUATION", "REGISTER" or "UNIVERSAL_PLR"')
+        smart_agent_connection['connectionType'] = connection_type
+
+        return self.put_api(f'license/smartagentconnections/{smart_agent_connection.get("id")}',
+                            data=json.dumps(smart_agent_connection)).json()
+
+    def get_plr_code(self):
+        """Generates a Universal PLR request code to be entered into Cisco licensing
+
+        :return: A PLR request code object as a dict
+        :rtype: dict
+        """
+        return self.get_api_single_item('license/operational/plrrequestcode')
+
+    def install_plr_code(self, plr_code: str):
+        """Acitvates a Universal PLR license code gathered from Cisco licensing with a request code
+
+        :param plr_code: PLR license code from Cisco
+        :type plr_code: str
+        :return: PLR install instance
+        :rtype: dict
+        """
+        plr = {'code': plr_code,
+               'type': 'PLRAuthorizationCode'}
+        return self._create_instance('license/action/installplrcode', plr, friendly_error='install PLR License')
+
     def get_intrusion_policies(self, name=''):
         """Gets all IntrusionPolicies or a single IntrusionPolicy if a name is provided
 
@@ -1326,3 +1394,38 @@ class Fdm:
                          "type": "syslogserver"
                          }
         return self._create_instance('object/syslogalerts', syslog_object)
+
+    def get_users(self, name=''):
+        """Gets all Firepower Users or a single User object if a name is provided
+
+        :param name: The name of a User to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all Users if no name is provided, or a dict of the single User with the given name
+        :rtype: list|dict
+        """
+        if name:
+            return self.get_obj_by_name('object/users', name)
+        else:
+            return self.get_api_items('object/users')
+
+    def set_admin_password(self, new_password):
+        """Sets the pasword for the admin user of the system
+
+        :param new_password: The new password to set for the user
+        :type new_password: str
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
+        """
+        current_user = self.get_users('admin')
+        current_user['password'] = self.password
+        current_user['newPassword'] = new_password
+
+        resp = self.put_api(f'object/users/{current_user["id"]}',
+                            data=json.dumps(current_user))
+        if resp.status_code == 200:
+            return True
+        elif resp.status_code == 422:
+            err_msgs = resp.json()['error']
+            raise FirepyerError(f'Unable to set password due to the following error(s): {err_msgs}')
+        else:
+            raise FirepyerError()
