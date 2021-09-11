@@ -10,7 +10,7 @@ from requests.models import Response
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 class Fdm:
