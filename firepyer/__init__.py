@@ -189,6 +189,10 @@ class Fdm:
 
     def get_paged_items(self, uri: str) -> list:
         response = self.get_api(uri).json()
+        all_items = response.get('items')
+        # TODO catch this error
+        if all_items is None:
+            pass
         all_items = response['items']
         next_url = response['paging']['next']
 
@@ -1287,6 +1291,52 @@ class Fdm:
                           }
         return self.post_api('license/smartlicenses',
                              data=json.dumps(license_object)).json()
+
+    def get_smart_agent_connection(self):
+        """Gets the Smart License Agent Connection which will have a type of EVALUATION, REGISTER or UNIVERSAL_PLR
+
+        :return: The SmartAgentConnection object in dict form
+        :rtype: dict
+        """
+        return self.get_api_single_item('license/smartagentconnections')
+
+    def set_smart_agent_connection(self, smart_agent_connection: dict, connection_type: str):
+        """Sets the Smart License Agent Connection type
+
+        :param smart_agent_connection: A dict representation of the SmartAgentConnection object to modify
+        :type smart_agent_connection: dict
+        :param connection_type: The connection type to use, either "EVALUATION", "REGISTER" or "UNIVERSAL_PLR"
+        :type connection_type: str
+        :return: The updated SmartAgentConnection
+        :rtype: dict
+        """
+        connection_type = connection_type.upper()
+        if connection_type not in ["EVALUATION", "REGISTER", "UNIVERSAL_PLR"]:
+            raise FirepyerInvalidOption('"connection_type" should be one of "EVALUATION", "REGISTER" or "UNIVERSAL_PLR"')
+        smart_agent_connection['connectionType'] = connection_type
+
+        return self.put_api(f'license/smartagentconnections/{smart_agent_connection.get("id")}',
+                            data=json.dumps(smart_agent_connection)).json()
+
+    def get_plr_code(self):
+        """Generates a Universal PLR request code to be entered into Cisco licensing
+
+        :return: A PLR request code object as a dict
+        :rtype: dict
+        """
+        return self.get_api_single_item('license/operational/plrrequestcode')
+
+    def install_plr_code(self, plr_code: str):
+        """Acitvates a Universal PLR license code gathered from Cisco licensing with a request code
+
+        :param plr_code: PLR license code from Cisco
+        :type plr_code: str
+        :return: PLR install instance
+        :rtype: dict
+        """
+        plr = {'code': plr_code,
+               'type': 'PLRAuthorizationCode'}
+        return self._create_instance('license/action/installplrcode', plr, friendly_error='install PLR License')
 
     def get_intrusion_policies(self, name=''):
         """Gets all IntrusionPolicies or a single IntrusionPolicy if a name is provided
