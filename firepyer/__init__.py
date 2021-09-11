@@ -1394,3 +1394,38 @@ class Fdm:
                          "type": "syslogserver"
                          }
         return self._create_instance('object/syslogalerts', syslog_object)
+
+    def get_users(self, name=''):
+        """Gets all Firepower Users or a single User object if a name is provided
+
+        :param name: The name of a User to find, defaults to ''
+        :type name: str, optional
+        :return: A list of all Users if no name is provided, or a dict of the single User with the given name
+        :rtype: list|dict
+        """
+        if name:
+            return self.get_obj_by_name('object/users', name)
+        else:
+            return self.get_api_items('object/users')
+
+    def set_admin_password(self, new_password):
+        """Sets the pasword for the admin user of the system
+
+        :param new_password: The new password to set for the user
+        :type new_password: str
+        :return: The full requests response object or None if an error occurred
+        :rtype: Response
+        """
+        current_user = self.get_users('admin')
+        current_user['password'] = self.password
+        current_user['newPassword'] = new_password
+
+        resp = self.put_api(f'object/users/{current_user["id"]}',
+                            data=json.dumps(current_user))
+        if resp.status_code == 200:
+            return True
+        elif resp.status_code == 422:
+            err_msgs = resp.json()['error']
+            raise FirepyerError(f'Unable to set password due to the following error(s): {err_msgs}')
+        else:
+            raise FirepyerError()
