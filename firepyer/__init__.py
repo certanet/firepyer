@@ -57,7 +57,7 @@ class Fdm:
             if response.status_code == 500:
                 raise FirepyerError('FTD presented a server error')
             elif response.status_code == 503:
-                raise FirepyerError('FTD responded, but service unavailable, may still be booting')
+                raise FirepyerError('FTD responded, but service unavailable (503), may still be booting')
             return response
         except requests.exceptions.SSLError:
             raise FirepyerUnreachableError(f'Failed to connect to {self.ftd_host} due to an SSL error - check certificate or disable verification')
@@ -462,11 +462,14 @@ class Fdm:
     def deploy_config(self):
         """Checks if there's any pending config changes and deploys them, waits until deploy finishes to return
 
-        :return: True if deployment was successful, False if deployment failed or not required
+        :return: True if deployment was successful or not required, False if deployment failed
         :rtype: bool
         """
         if self.get_pending_changes():
             deployment_id = self.deploy_now()
+            if deployment_id is None:
+                # Unable to deploy
+                return False
             state = self.get_deployment_status(deployment_id)
             while state != 'DEPLOYED' and state != 'FAILED':
                 sleep(10)
@@ -477,7 +480,7 @@ class Fdm:
                 return False
         else:
             # Nothing to deploy
-            return False
+            return True
 
     def get_vrfs(self, name='', must_find: bool = False):
         """Gets all VRFs or a single VRF if a name is provided
@@ -1092,6 +1095,7 @@ class Fdm:
     def create_security_zone(self, name, description='', interfaces=[], phy_interfaces=[], mode='ROUTED'):
         """
         Creates a security zone
+
         :param name: str The name of the Security Zone
         :param description: str Description
         :param interfaces: list The logical names of any Interfaces to be part of this Security Zone e.g. inside
