@@ -17,7 +17,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/certanet/firepyer",
     packages=setuptools.find_packages(),
-    install_requires=['requests'],
+    install_requires=['requests', 'requests-toolbelt'],
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',

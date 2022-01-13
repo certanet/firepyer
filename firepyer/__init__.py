@@ -6,11 +6,12 @@ from typing import List
 
 import requests
 from requests.models import Response
+from requests_toolbelt.multipart import encoder
 
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 class Fdm:
@@ -35,7 +36,7 @@ class Fdm:
         if not verify:
             requests.packages.urllib3.disable_warnings()
 
-    def api_call(self, uri, method, data=None, get_auth=True, files=None, stream=False):
+    def api_call(self, uri, method, data=None, get_auth=True, stream=False, extra_headers=None):
         # Check for http allows passing in full URL e.g. from pagination next page link
         if 'http' not in uri:
             uri = f"https://{self.ftd_host}/api/fdm/latest/{uri}"
@@ -43,9 +44,11 @@ class Fdm:
         headers = {"Accept": "application/json", 'User-Agent': f'firepyer/{__version__}'}
         if get_auth:
             headers['Authorization'] = f'Bearer {self._check_get_access_token()}'
-        if not files:
+        if not extra_headers:
             # When sending files, requests will auto populate CT as multipart/form-data
             headers['Content-Type'] = "application/json"
+        else:
+            headers = {**headers, **extra_headers}
 
         try:
             response = requests.request(method, uri,
@@ -64,8 +67,8 @@ class Fdm:
         except requests.exceptions.ConnectionError:
             raise FirepyerUnreachableError(f'Unable to contact the FTD device at {self.ftd_host}')
 
-    def post_api(self, uri, data=None, get_auth=True, files=None):
-        return self.api_call(uri, 'POST', data=data, get_auth=get_auth, files=files)
+    def post_api(self, uri, data=None, get_auth=True, extra_headers=None):
+        return self.api_call(uri, 'POST', data=data, get_auth=get_auth, extra_headers=extra_headers)
 
     def put_api(self, uri, data=None):
         return self.api_call(uri, 'PUT', data=data)
@@ -969,8 +972,15 @@ class Fdm:
 
     def _upload_file(self, url: str, filename: str) -> dict:
         # API parameter is called fileToUpload
-        file = {'fileToUpload': open(filename, 'rb')}
-        resp = self.post_api(uri=url, files=file)
+
+        # Stream file using multipart, else may cause MemoryError if sending as whole file on some systems
+        with open(filename, 'rb') as f:
+            form = encoder.MultipartEncoder({
+                'fileToUpload': (filename, f, 'application/octet-stream'),
+                'composite': 'NONE'
+            })
+            headers = {'Prefer': 'respond-async', 'Content-Type': form.content_type}
+            resp = self.post_api(uri=url, data=form, extra_headers=headers)
         return self._check_post_response(resp=resp, friendly_error='upload file')
 
     def update_vdb(self) -> dict:
