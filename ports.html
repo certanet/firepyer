@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ports &mdash; Firepyer 0.0.7 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Routing" href="routing.html" />
+    <link rel="prev" title="Networks" href="networks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Firepyer<img src="_static/firepyer-logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Firepyer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using.html">Using Firepyer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployments.html">Deployments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">Interfaces &amp; Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Ports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policies.html">Security Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">System</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change.html">Change Log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Firepyer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Ports</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="ports">
+<h1>Ports<a class="headerlink" href="#ports" title="Permalink to this headline">¶</a></h1>
+<p>PortObjects and PortGroups are used to store TCP or UDP ports
+as variables, that can be used in Access Policy rules etc.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.create_icmp_port">
+<code class="sig-name descname">create_icmp_port</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">type</em>, <em class="sig-param">code=None</em>, <em class="sig-param">af='4'</em>, <em class="sig-param">description=None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_icmp_port" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an ICMPv4/6 Port object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the object</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – Must be a valid ICMPv4 or ICMPv6 type, see enum for options</p></li>
+<li><p><strong>code</strong> (<em>str</em><em>, </em><em>optional</em>) – Must be a valid ICMPv4 or ICMPv6 code, see enum for options, defaults to None</p></li>
+<li><p><strong>af</strong> (<em>str</em><em>, </em><em>optional</em>) – Address family, ‘4’ for an ICMPv4 object, ‘6’ for an ICMPv6 object, defaults to ‘4’</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – Description for the Port object, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The ICMP Port object instance created</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_icmp_port</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ping-reply&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;ECHO_REPLY&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: None,</span>
+<span class="go"> &#39;icmpv4Code&#39;: None,</span>
+<span class="go"> &#39;icmpv4Type&#39;: &#39;ECHO_REPLY&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;32bc6efd-794b-11eb-b948-a194e41e088a&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/icmpv4ports/32bc6efd-794b-11eb-b948-a194e41e088a&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;ping-reply&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;icmpv4portobject&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;ficvgobxazqtj&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.create_port_group">
+<code class="sig-name descname">create_port_group</code><span class="sig-paren">(</span><em class="sig-param">name: str, objects: List[str], description: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_port_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a PortGroup object, containing at least one existing tcp/udp/icmp Port or PortGroup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the PortGroup to create</p></li>
+<li><p><strong>objects</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Names of the tcp/udp/icmp Port or PortGroup objects to be added to the group</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the PortGroup, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The PortGroup object instance created</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_port_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;HTTP-S Group&#39;</span><span class="p">,</span> <span class="n">objects</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HTTP&#39;</span><span class="p">,</span> <span class="s1">&#39;HTTPS&#39;</span><span class="p">],</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;HTTP and HTTPS ports&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: &#39;HTTP and HTTPS ports&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;cf42834b-794c-11eb-b948-efc7c141f6b3&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/portgroups/cf42834b-794c-11eb-b948-efc7c141f6b3&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;HTTP-S Group&#39;,</span>
+<span class="go"> &#39;objects&#39;: [{&#39;id&#39;: &#39;18312adc-38bb-11e2-86aa-62f0c593a59a&#39;,</span>
+<span class="go">              &#39;name&#39;: &#39;HTTP&#39;,</span>
+<span class="go">              &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">              &#39;version&#39;: &#39;jfkuxugpghogc&#39;},</span>
+<span class="go">             {&#39;id&#39;: &#39;1834bd00-38bb-11e2-86aa-62f0c593a59a&#39;,</span>
+<span class="go">              &#39;name&#39;: &#39;HTTPS&#39;,</span>
+<span class="go">              &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">              &#39;version&#39;: &#39;f7j76od54tkia&#39;}],</span>
+<span class="go"> &#39;type&#39;: &#39;portobjectgroup&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;cwappx23fqvaz&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.create_port_object">
+<code class="sig-name descname">create_port_object</code><span class="sig-paren">(</span><em class="sig-param">name: str</em>, <em class="sig-param">port: str</em>, <em class="sig-param">type: str</em>, <em class="sig-param">description: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_port_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a TCP or UDP Port object to use in access rules</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the Port object to be created</p></li>
+<li><p><strong>port</strong> (<em>str</em>) – A single port number or ‘-‘ separated range of ports e.g. ‘80’ or ‘8000-8008’</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – The protocol, must be one of [‘tcp’, ‘udp’]</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the Port, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The TCP/UDP Port object instance created</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_port_object</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;my-http-port&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="s1">&#39;8001&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;tcp&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;My custom HTTP port 8001&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: &#39;My custom HTTP port 8001&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;e10fd062-794b-11eb-b948-b5d9fac6117d&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/tcpports/e10fd062-794b-11eb-b948-b5d9fac6117d&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;my-http-port&#39;,</span>
+<span class="go"> &#39;port&#39;: &#39;8001&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;bb4wded6dz4zt&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_icmp_ports">
+<code class="sig-name descname">get_icmp_ports</code><span class="sig-paren">(</span><em class="sig-param">name=''</em>, <em class="sig-param">af='4'</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_icmp_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all ICMPv4/6 type Ports or a single ICMPv4/6 Port object if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of a ICMPv4 Port to find, defaults to ‘’</p></li>
+<li><p><strong>af</strong> (<em>str</em><em>, </em><em>optional</em>) – Address family, ‘4’ for an ICMPv4 object, ‘6’ for an ICMPv6 object, defaults to ‘4’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all ICMPv4 Ports if no name is provided, or a dict of the single ICMPv4 Port with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_icmp_ports</span><span class="p">()</span>
+<span class="go">[{&#39;description&#39;: None,</span>
+<span class="go">  &#39;icmpv4Code&#39;: None,</span>
+<span class="go">  &#39;icmpv4Type&#39;: &#39;ECHO_REPLY&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;7d1e807d-545b-11eb-aab5-95f8b07b5659&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/icmpv4ports/7d1e807d-545b-11eb-aab5-95f8b07b5659&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;ec reply&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;icmpv4portobject&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;loxpplznuzrjn&#39;},</span>
+<span class="go"> {&#39;description&#39;: None,</span>
+<span class="go">  &#39;icmpv4Code&#39;: &#39;NET_UNREACHABLE&#39;,</span>
+<span class="go">  &#39;icmpv4Type&#39;: &#39;DESTINATION_UNREACHABLE&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;fb816ea2-545c-11eb-aab5-5dd867fd255a&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/icmpv4ports/fb816ea2-545c-11eb-aab5-5dd867fd255a&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;ICMP_UNREACHABLE&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;icmpv4portobject&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;bf3gltejkuiws&#39;}]</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_icmp_ports</span><span class="p">(</span><span class="n">af</span><span class="o">=</span><span class="s1">&#39;6&#39;</span><span class="p">)</span>
+<span class="go">[{&#39;description&#39;: &#39;A very large ICMPv6&#39;,</span>
+<span class="go">  &#39;icmpv6Code&#39;: None,</span>
+<span class="go">  &#39;icmpv6Type&#39;: &#39;PACKET_TOO_BIG&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;10d19dae-5458-11eb-aab5-e946ff8eb526&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/icmpv6ports/10d19dae-5458-11eb-aab5-e946ff8eb526&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;BIG6&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;icmpv6portobject&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;lrerbmosmioew&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_port_groups">
+<code class="sig-name descname">get_port_groups</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_port_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all PortGroups or a single PortGroup if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of a PortGroup to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all PortGroups if no name is provided, or a dict of the single PortGroup with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_port_groups</span><span class="p">()</span>
+<span class="go">[{&#39;description&#39;: None,</span>
+<span class="go">  &#39;id&#39;: &#39;9722eb6c-503c-11eb-aab5-e5660269d013&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/portgroups/9722eb6c-503c-11eb-aab5-e5660269d013&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;MY-APP-GROUP&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;96128cd6-503c-11eb-aab5-3106163baeae&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;MY-APP8080&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;o6uofdgc7jjqg&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;portobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;najpv3ahvumwg&#39;},</span>
+<span class="go"> {&#39;description&#39;: None,</span>
+<span class="go">  &#39;id&#39;: &#39;96b24f49-503c-11eb-aab5-538789755de0&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/portgroups/96b24f49-503c-11eb-aab5-538789755de0&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;MY-HTTP-GROUP&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;959aebd0-503c-11eb-aab5-5962006643ab&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;MY-HTTP8001&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;j52i2zhi2vdmj&#39;},</span>
+<span class="go">              {&#39;id&#39;: &#39;95cc3503-503c-11eb-aab5-99f174e74471&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;MY-HTTP8002&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;og4ujvn4b7gvt&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;portobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;lb2muyfaazmcz&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_port_obj_or_grp">
+<code class="sig-name descname">get_port_obj_or_grp</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.get_port_obj_or_grp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Port (tcp/udp/icmpv4/icmpv6) object or PortGroup by the given name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Name of the object/group to find</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Single dict describing the object, if a resource with the name is found</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_port_obj_or_grp</span><span class="p">(</span><span class="s1">&#39;BIG6&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: &#39;A very large ICMPv6&#39;,</span>
+<span class="go"> &#39;icmpv6Code&#39;: None,</span>
+<span class="go"> &#39;icmpv6Type&#39;: &#39;PACKET_TOO_BIG&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;10d19dae-5458-11eb-aab5-e946ff8eb526&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/icmpv6ports/10d19dae-5458-11eb-aab5-e946ff8eb526&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;BIG6&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;icmpv6portobject&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;lrerbmosmioew&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_tcp_ports">
+<code class="sig-name descname">get_tcp_ports</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_tcp_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all TCP type Ports or a single TCP Port object if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of a TCP Port to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all TCP Ports if no name is provided, or a dict of the single TCP Port with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_udp_ports">
+<code class="sig-name descname">get_udp_ports</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_udp_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all UDP type Ports or a single UDP Port object if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of a UDP Port to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all UDP Ports if no name is provided, or a dict of the single UDP Port with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="networks.html" class="btn btn-neutral float-left" title="Networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="routing.html" class="btn btn-neutral float-right" title="Routing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Cockerill, Certa Networks.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

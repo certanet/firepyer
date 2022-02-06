@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Policies &mdash; Firepyer 0.0.7 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="System Settings &amp; Tasks" href="system.html" />
+    <link rel="prev" title="Routing" href="routing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Firepyer<img src="_static/firepyer-logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Firepyer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using.html">Using Firepyer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployments.html">Deployments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">Interfaces &amp; Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ports.html">Ports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Security Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">System</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change.html">Change Log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Firepyer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Security Policies</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="security-policies">
+<h1>Security Policies<a class="headerlink" href="#security-policies" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.create_access_rule">
+<code class="sig-name descname">create_access_rule</code><span class="sig-paren">(</span><em class="sig-param">name: str</em>, <em class="sig-param">action: str</em>, <em class="sig-param">src_zones: List[str] = []</em>, <em class="sig-param">src_networks: List[str] = []</em>, <em class="sig-param">src_ports: List[str] = []</em>, <em class="sig-param">dst_zones: List[str] = []</em>, <em class="sig-param">dst_networks: List[str] = []</em>, <em class="sig-param">dst_ports: List[str] = []</em>, <em class="sig-param">int_policy: str = None</em>, <em class="sig-param">syslog: str = None</em>, <em class="sig-param">log: str = ''</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_access_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an AccessRule to be used in the main Access Policy. If any optional src/dst values are not
+provided, they are treated as an ‘any’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the AccessRule</p></li>
+<li><p><strong>action</strong> (<em>str</em>) – The action the rule should take if matched, should be one of [‘PERMIT’, ‘TRUST’, ‘DENY’]</p></li>
+<li><p><strong>src_zones</strong> (<em>list</em><em>, </em><em>optional</em>) – List of names of source Security Zones, defaults to []</p></li>
+<li><p><strong>src_networks</strong> (<em>list</em><em>, </em><em>optional</em>) – List of names of source networks, names can be of either NetworkObject or NetworkGroup, defaults to []</p></li>
+<li><p><strong>src_ports</strong> (<em>list</em><em>, </em><em>optional</em>) – List of names of source ports, names can be of either tcp/udp PortObject or PortGroup, defaults to []</p></li>
+<li><p><strong>dst_zones</strong> (<em>list</em><em>, </em><em>optional</em>) – List of destination Security Zones, defaults to []</p></li>
+<li><p><strong>dst_networks</strong> (<em>list</em><em>, </em><em>optional</em>) – List of names of destination networks, names can be of either NetworkObject or NetworkGroup, defaults to []</p></li>
+<li><p><strong>dst_ports</strong> (<em>list</em><em>, </em><em>optional</em>) – List of names of destination ports, names can be of either tcp/udp PortObject or PortGroup, defaults to []</p></li>
+<li><p><strong>int_policy</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of an IntrusionPolicy to apply to the rule, defaults to None</p></li>
+<li><p><strong>syslog</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of a SyslogServer to log the rule to, in the format of IP:PORT, defaults to None</p></li>
+<li><p><strong>log</strong> (<em>str</em><em>, </em><em>optional</em>) – Log the rule at start and end of connection, end of connection, or no log, should be one of [‘BOTH’, ‘END’, ‘’], defaults to ‘’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ResourceNotFound</strong> – If any of the object names passed in cannot be found e.g. a source network or dest port has not been created</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The AccessRule object that has been created</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_access_rule</span><span class="p">(</span><span class="s1">&#39;my-http-rule&#39;</span><span class="p">,</span> <span class="s1">&#39;PERMIT&#39;</span><span class="p">,</span> <span class="n">src_zones</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;inside_zone&#39;</span><span class="p">],</span> <span class="n">dst_zones</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;outside_zone&#39;</span><span class="p">],</span> <span class="n">src_networks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Host1-NIC1&#39;</span><span class="p">],</span> <span class="n">dst_networks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GROUP-ALL-HOSTS&#39;</span><span class="p">],</span> <span class="n">dst_ports</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HTTP&#39;</span><span class="p">],</span> <span class="n">int_policy</span><span class="o">=</span><span class="s1">&#39;Maximum Detection&#39;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+<span class="go">{&#39;destinationDynamicObjects&#39;: [],</span>
+<span class="go"> &#39;destinationNetworks&#39;: [{&#39;id&#39;: &#39;2904a9b9-4db6-11eb-aab5-93170f9c3b34&#39;,</span>
+<span class="go">                          &#39;name&#39;: &#39;GROUP-ALL-HOSTS&#39;,</span>
+<span class="go">                          &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">                          &#39;version&#39;: &#39;3zkyarvfx3qx&#39;}],</span>
+<span class="go"> &#39;destinationPorts&#39;: [{&#39;id&#39;: &#39;18312adc-38bb-11e2-86aa-62f0c593a59a&#39;,</span>
+<span class="go">                       &#39;name&#39;: &#39;HTTP&#39;,</span>
+<span class="go">                       &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">                       &#39;version&#39;: &#39;jfkuxugpghogc&#39;}],</span>
+<span class="go"> &#39;destinationZones&#39;: [{&#39;id&#39;: &#39;b1af33e1-b3e5-11e5-8db8-afdc0be5453e&#39;,</span>
+<span class="go">                       &#39;name&#39;: &#39;outside_zone&#39;,</span>
+<span class="go">                       &#39;type&#39;: &#39;securityzone&#39;,</span>
+<span class="go">                       &#39;version&#39;: &#39;chx6737ygiktz&#39;}],</span>
+<span class="go"> &#39;embeddedAppFilter&#39;: None,</span>
+<span class="go"> &#39;eventLogAction&#39;: &#39;LOG_BOTH&#39;,</span>
+<span class="go"> &#39;filePolicy&#39;: None,</span>
+<span class="go"> &#39;id&#39;: &#39;8dfa08d4-7945-11eb-b948-03b19829b466&#39;,</span>
+<span class="go"> &#39;identitySources&#39;: [],</span>
+<span class="go"> &#39;intrusionPolicy&#39;: {&#39;id&#39;: &#39;80875699-4d44-11eb-9e04-190e1a7b8344&#39;,</span>
+<span class="go">                     &#39;name&#39;: &#39;Maximum Detection&#39;,</span>
+<span class="go">                     &#39;type&#39;: &#39;intrusionpolicy&#39;,</span>
+<span class="go">                     &#39;version&#39;: &#39;nlypnji4gaseu&#39;},</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/accesspolicies/c78e66bc-cb57-43fe-bcbf-96b79b3475b3/accessrules/8dfa08d4-7945-11eb-b948-03b19829b466&#39;},</span>
+<span class="go"> &#39;logFiles&#39;: False,</span>
+<span class="go"> &#39;name&#39;: &#39;my-http-rule&#39;,</span>
+<span class="go"> &#39;ruleAction&#39;: &#39;PERMIT&#39;,</span>
+<span class="go"> &#39;ruleId&#39;: 268435507,</span>
+<span class="go"> &#39;sourceDynamicObjects&#39;: [],</span>
+<span class="go"> &#39;sourceNetworks&#39;: [{&#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go">                     &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go">                     &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">                     &#39;version&#39;: &#39;jpfwstwwapru5&#39;}],</span>
+<span class="go"> &#39;sourcePorts&#39;: [],</span>
+<span class="go"> &#39;sourceZones&#39;: [{&#39;id&#39;: &#39;90c377e0-b3e5-11e5-8db8-651556da7898&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;inside_zone&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;securityzone&#39;,</span>
+<span class="go">                  &#39;version&#39;: &#39;m6c22ydlemewj&#39;}],</span>
+<span class="go"> &#39;syslogServer&#39;: None,</span>
+<span class="go"> &#39;timeRangeObjects&#39;: [],</span>
+<span class="go"> &#39;type&#39;: &#39;accessrule&#39;,</span>
+<span class="go"> &#39;urlFilter&#39;: None,</span>
+<span class="go"> &#39;users&#39;: [],</span>
+<span class="go"> &#39;version&#39;: &#39;kazwzgi6htvr5&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.delete_access_rule">
+<code class="sig-name descname">delete_access_rule</code><span class="sig-paren">(</span><em class="sig-param">rule_id: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#firepyer.Fdm.delete_access_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete an AccessRule</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rule_id</strong> (<em>str</em>) – AccessRule id</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerResourceNotFound" title="firepyer.exceptions.FirepyerResourceNotFound"><strong>FirepyerResourceNotFound</strong></a> – If an AccessRule with the given id does not exist</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the object is successfully deleted</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_access_rules">
+<code class="sig-name descname">get_access_rules</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_access_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all AccessRules or a single AccessRule if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the AccessRule to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all AccessRules if no name is provided, or a dict of the single AccessRules with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_access_rules</span><span class="p">()</span>
+<span class="go">[{&#39;destinationDynamicObjects&#39;: [],</span>
+<span class="go">  &#39;destinationNetworks&#39;: [{&#39;id&#39;: &#39;2904a9b9-4db6-11eb-aab5-93170f9c3b34&#39;,</span>
+<span class="go">                           &#39;name&#39;: &#39;GROUP-ALL-HOSTS&#39;,</span>
+<span class="go">                           &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">                           &#39;version&#39;: &#39;i4oe7b4lpaxos&#39;}],</span>
+<span class="go">  &#39;destinationPorts&#39;: [{&#39;id&#39;: &#39;18312adc-38bb-11e2-86aa-62f0c593a59a&#39;,</span>
+<span class="go">                        &#39;name&#39;: &#39;HTTP&#39;,</span>
+<span class="go">                        &#39;type&#39;: &#39;tcpportobject&#39;,</span>
+<span class="go">                        &#39;version&#39;: &#39;jfkuxugpghogc&#39;}],</span>
+<span class="go">  &#39;destinationZones&#39;: [{&#39;id&#39;: &#39;b1af33e1-b3e5-11e5-8db8-afdc0be5453e&#39;,</span>
+<span class="go">                        &#39;name&#39;: &#39;outside_zone&#39;,</span>
+<span class="go">                        &#39;type&#39;: &#39;securityzone&#39;,</span>
+<span class="go">                        &#39;version&#39;: &#39;chx6737ygiktz&#39;}],</span>
+<span class="go">  &#39;embeddedAppFilter&#39;: None,</span>
+<span class="go">  &#39;eventLogAction&#39;: &#39;LOG_FLOW_END&#39;,</span>
+<span class="go">  &#39;filePolicy&#39;: None,</span>
+<span class="go">  &#39;id&#39;: &#39;5c405b75-5105-11eb-aab5-0140ccd4feb7&#39;,</span>
+<span class="go">  &#39;identitySources&#39;: [],</span>
+<span class="go">  &#39;intrusionPolicy&#39;: {&#39;id&#39;: &#39;80875699-4d44-11eb-9e04-190e1a7b8344&#39;,</span>
+<span class="go">                      &#39;name&#39;: &#39;Maximum Detection&#39;,</span>
+<span class="go">                      &#39;type&#39;: &#39;intrusionpolicy&#39;,</span>
+<span class="go">                      &#39;version&#39;: &#39;nlypnji4gaseu&#39;},</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/accesspolicies/c78e66bc-cb57-43fe-bcbf-96b79b3475b3/accessrules/5c405b75-5105-11eb-aab5-0140ccd4feb7&#39;},</span>
+<span class="go">  &#39;logFiles&#39;: False,</span>
+<span class="go">  &#39;name&#39;: &#39;very-secure-rule&#39;,</span>
+<span class="go">  &#39;ruleAction&#39;: &#39;PERMIT&#39;,</span>
+<span class="go">  &#39;ruleId&#39;: 268435505,</span>
+<span class="go">  &#39;sourceDynamicObjects&#39;: [],</span>
+<span class="go">  &#39;sourceNetworks&#39;: [{&#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go">                      &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go">                      &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">                      &#39;version&#39;: &#39;jpfwstwwapru5&#39;}],</span>
+<span class="go">  &#39;sourcePorts&#39;: [],</span>
+<span class="go">  &#39;sourceZones&#39;: [{&#39;id&#39;: &#39;90c377e0-b3e5-11e5-8db8-651556da7898&#39;,</span>
+<span class="go">                   &#39;name&#39;: &#39;inside_zone&#39;,</span>
+<span class="go">                   &#39;type&#39;: &#39;securityzone&#39;,</span>
+<span class="go">                   &#39;version&#39;: &#39;m6c22ydlemewj&#39;}],</span>
+<span class="go">  &#39;syslogServer&#39;: None,</span>
+<span class="go">  &#39;timeRangeObjects&#39;: [],</span>
+<span class="go">  &#39;type&#39;: &#39;accessrule&#39;,</span>
+<span class="go">  &#39;urlFilter&#39;: {&#39;type&#39;: &#39;embeddedurlfilter&#39;,</span>
+<span class="go">                &#39;urlCategories&#39;: [],</span>
+<span class="go">                &#39;urlObjects&#39;: []},</span>
+<span class="go">  &#39;users&#39;: [],</span>
+<span class="go">  &#39;version&#39;: &#39;hjxr5d7i3mg5s&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_intrusion_policies">
+<code class="sig-name descname">get_intrusion_policies</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_intrusion_policies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all IntrusionPolicies or a single IntrusionPolicy if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the IntrusionPolicy to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all IntrusionPolicies if no name is provided, or a dict of the single IntrusionPolicy with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_intrusion_policies</span><span class="p">()</span>
+<span class="go">[{&#39;description&#39;: &#39;Security Over Connectivity Layer&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;6a75c525-4d44-11eb-9e04-6f0a2ca42b30&#39;,</span>
+<span class="go">  &#39;inspectionMode&#39;: &#39;PREVENTION&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/6a75c525-4d44-11eb-9e04-6f0a2ca42b30&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Security Over Connectivity&#39;,</span>
+<span class="go">  &#39;rules&#39;: {&#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/6a75c525-4d44-11eb-9e04-6f0a2ca42b30/intrusionrules&#39;}},</span>
+<span class="go">  &#39;type&#39;: &#39;intrusionpolicy&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;m7z67ffrxabw&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;Balanced Security and Connectivity Layer&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;7481ca70-4d44-11eb-9e04-af619bd5bf8e&#39;,</span>
+<span class="go">  &#39;inspectionMode&#39;: &#39;PREVENTION&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/7481ca70-4d44-11eb-9e04-af619bd5bf8e&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Balanced Security and Connectivity&#39;,</span>
+<span class="go">  &#39;rules&#39;: {&#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/7481ca70-4d44-11eb-9e04-af619bd5bf8e/intrusionrules&#39;}},</span>
+<span class="go">  &#39;type&#39;: &#39;intrusionpolicy&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;j6fstu4h5qlna&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;Connectivity Over Security Layer&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;7bce629b-4d44-11eb-9e04-77616a49e58c&#39;,</span>
+<span class="go">  &#39;inspectionMode&#39;: &#39;PREVENTION&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/7bce629b-4d44-11eb-9e04-77616a49e58c&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Connectivity Over Security&#39;,</span>
+<span class="go">  &#39;rules&#39;: {&#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/7bce629b-4d44-11eb-9e04-77616a49e58c/intrusionrules&#39;}},</span>
+<span class="go">  &#39;type&#39;: &#39;intrusionpolicy&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;phs2e2tlvyhdn&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;Maximum Detection Layer&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;80875699-4d44-11eb-9e04-190e1a7b8344&#39;,</span>
+<span class="go">  &#39;inspectionMode&#39;: &#39;PREVENTION&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/80875699-4d44-11eb-9e04-190e1a7b8344&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Maximum Detection&#39;,</span>
+<span class="go">  &#39;rules&#39;: {&#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/policy/intrusionpolicies/80875699-4d44-11eb-9e04-190e1a7b8344/intrusionrules&#39;}},</span>
+<span class="go">  &#39;type&#39;: &#39;intrusionpolicy&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;nlypnji4gaseu&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="routing.html" class="btn btn-neutral float-left" title="Routing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="system.html" class="btn btn-neutral float-right" title="System Settings &amp; Tasks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Cockerill, Certa Networks.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

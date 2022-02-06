@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Settings &amp; Tasks &mdash; Firepyer 0.0.7 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utilities" href="utils.html" />
+    <link rel="prev" title="Security Policies" href="policies.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Firepyer<img src="_static/firepyer-logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Firepyer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using.html">Using Firepyer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployments.html">Deployments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">Interfaces &amp; Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ports.html">Ports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policies.html">Security Policies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#config-import-export">Config Import/Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#updates">Updates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#upgrades">Upgrades</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change.html">Change Log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Firepyer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>System Settings &amp; Tasks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="system-settings-tasks">
+<h1>System Settings &amp; Tasks<a class="headerlink" href="#system-settings-tasks" title="Permalink to this headline">¶</a></h1>
+<p>General system settings.</p>
+<div class="section" id="config-import-export">
+<h2>Config Import/Export<a class="headerlink" href="#config-import-export" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.apply_config_import">
+<code class="sig-name descname">apply_config_import</code><span class="sig-paren">(</span><em class="sig-param">remote_filename: str</em>, <em class="sig-param">auto_deploy: bool = True</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.apply_config_import" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a JSON config file that has already been imported</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>remote_filename</strong> (<em>str</em>) – Filename of the config within the FTD system</p></li>
+<li><p><strong>auto_deploy</strong> (<em>bool</em>) – If the imported config should be deployed to the device or just sit in pending</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Config import job object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.delete_config_file">
+<code class="sig-name descname">delete_config_file</code><span class="sig-paren">(</span><em class="sig-param">filename: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#firepyer.Fdm.delete_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes an exported/imported config file stored in FTD</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Name of the config file object - “diskFileName”</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerResourceNotFound" title="firepyer.exceptions.FirepyerResourceNotFound"><strong>FirepyerResourceNotFound</strong></a> – If a config with the given filename does not exist</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the file is successfully deleted</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.download_config_file">
+<code class="sig-name descname">download_config_file</code><span class="sig-paren">(</span><em class="sig-param">remote_filename: str</em>, <em class="sig-param">local_filename: str = None</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#firepyer.Fdm.download_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads a config file that has been exported (stored within FTD)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>remote_filename</strong> (<em>str</em>) – Name of the config file on the FTD (diskFileName) or the export job ID</p></li>
+<li><p><strong>local_filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save to the config file to locally, defaults to the remote filename</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerError" title="firepyer.exceptions.FirepyerError"><strong>FirepyerError</strong></a> – If unable to download the config file e.g. the filename does not exist or another error occurs</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the config is successfully downloaded</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.export_config">
+<code class="sig-name descname">export_config</code><span class="sig-paren">(</span><em class="sig-param">config_name: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.export_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a job to save the current config as a JSON file in the FTD appliance. Once the job is complete the saved file can be downloaded</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional name to store the config file as, defaults to “Exported-at-YYYY-MM-DD-HH-MM-SSZ.zip”</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Config export job object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">export_config</span><span class="p">(</span><span class="s1">&#39;config-with-ospf.zip&#39;</span><span class="p">)</span>
+<span class="go">{&#39;configExportType&#39;: &#39;FULL_EXPORT&#39;,</span>
+<span class="go"> &#39;deployedObjectsOnly&#39;: True,</span>
+<span class="go"> &#39;diskFileName&#39;: &#39;config-with-ospf.zip&#39;,</span>
+<span class="go"> &#39;doNotEncrypt&#39;: True,</span>
+<span class="go"> &#39;encryptionKey&#39;: None,</span>
+<span class="go"> &#39;entityIds&#39;: None,</span>
+<span class="go"> &#39;forceOperation&#39;: False,</span>
+<span class="go"> &#39;id&#39;: &#39;264f7ef6-8431-11eb-ab2b-31e0e0bf5eef&#39;,</span>
+<span class="go"> &#39;ipAddress&#39;: &#39;192.168.133.100&#39;,</span>
+<span class="go"> &#39;jobHistoryUuid&#39;: &#39;266020c7-8431-11eb-ab2b-41e10f130001&#39;,</span>
+<span class="go"> &#39;jobName&#39;: &#39;Config Export&#39;,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/action/configexport/264f7ef6-8431-11eb-ab2b-31e0e0bf5eef&#39;},</span>
+<span class="go"> &#39;scheduleType&#39;: &#39;IMMEDIATE&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;scheduleconfigexport&#39;,</span>
+<span class="go"> &#39;user&#39;: &#39;admin&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;i7flijevvkqzu&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_config_files">
+<code class="sig-name descname">get_config_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[dict]<a class="headerlink" href="#firepyer.Fdm.get_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the imported/exported config objects stored in FTD</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of each config file object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[dict]</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_config_files</span><span class="p">()</span>
+<span class="go">[{&#39;dateModified&#39;: &#39;2021-03-13 19:20:26Z&#39;,</span>
+<span class="go">  &#39;diskFileName&#39;: &#39;config-with-ospf.zip&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;default&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/action/configfiles/default&#39;},</span>
+<span class="go">  &#39;sizeBytes&#39;: 11374,</span>
+<span class="go">  &#39;type&#39;: &#39;configimportexportfileinfo&#39;},</span>
+<span class="go"> {&#39;dateModified&#39;: &#39;2021-03-13 16:24:10Z&#39;,</span>
+<span class="go">  &#39;diskFileName&#39;: &#39;full_config-1.txt&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;default&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/action/configfiles/default&#39;},</span>
+<span class="go">  &#39;sizeBytes&#39;: 69658,</span>
+<span class="go">  &#39;type&#39;: &#39;configimportexportfileinfo&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.upload_config">
+<code class="sig-name descname">upload_config</code><span class="sig-paren">(</span><em class="sig-param">filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.upload_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload a JSON config file, usually a .txt or .zip previously exported from an FTD appliance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Relative filepath and name of the config file to upload</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Uploaded file object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">upload_config</span><span class="p">(</span><span class="s1">&#39;full_config-1.txt&#39;</span><span class="p">)</span>
+<span class="go">{&#39;dateModified&#39;: &#39;2021-03-13 16:24:10Z&#39;,</span>
+<span class="go"> &#39;diskFileName&#39;: &#39;full_config-1.txt&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;default&#39;,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/action/uploadconfigfile/default&#39;},</span>
+<span class="go"> &#39;sizeBytes&#39;: 69658,</span>
+<span class="go"> &#39;type&#39;: &#39;configimportexportfileinfo&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.create_syslog_server">
+<code class="sig-name descname">create_syslog_server</code><span class="sig-paren">(</span><em class="sig-param">ip</em>, <em class="sig-param">protocol='UDP'</em>, <em class="sig-param">port='514'</em>, <em class="sig-param">interface=None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_syslog_server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a SyslogServer to be able to send access rule and system logs to</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ip</strong> (<em>str</em>) – IP address of the syslog server</p></li>
+<li><p><strong>protocol</strong> (<em>str</em><em>, </em><em>optional</em>) – Protocol used to send syslog messages, must be one of [‘TCP’, ‘UDP’], defaults to ‘UDP’</p></li>
+<li><p><strong>port</strong> (<em>str</em><em>, </em><em>optional</em>) – Port number used to send syslog messages, defaults to ‘514’</p></li>
+<li><p><strong>interface</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of a data interface to use as the source to reach the syslog server IP, otherwise mgmt will be used, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The new SyslogServer object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_syslog_server</span><span class="p">(</span><span class="n">ip</span><span class="o">=</span><span class="s1">&#39;10.1.5.14&#39;</span><span class="p">)</span>
+<span class="go">{&#39;deviceInterface&#39;: None,</span>
+<span class="go"> &#39;host&#39;: &#39;10.1.5.14&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;0fe4932c-794e-11eb-b948-27bb3f4588ef&#39;,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/syslogalerts/0fe4932c-794e-11eb-b948-27bb3f4588ef&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;10.1.5.14:514&#39;,</span>
+<span class="go"> &#39;port&#39;: &#39;514&#39;,</span>
+<span class="go"> &#39;protocol&#39;: &#39;UDP&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;syslogserver&#39;,</span>
+<span class="go"> &#39;useManagementInterface&#39;: True,</span>
+<span class="go"> &#39;version&#39;: &#39;buzrvvrcvt6ly&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_dhcp_servers">
+<code class="sig-name descname">get_dhcp_servers</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.get_dhcp_servers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the DHCP server configuration, including any pools</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The DHCP server container object for all DHCP settings</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_dhcp_servers</span><span class="p">()</span>
+<span class="go">{&#39;autoConfig&#39;: True,</span>
+<span class="go"> &#39;id&#39;: &#39;a47ce00c-fe55-11e4-8e99-f73968181bfd&#39;,</span>
+<span class="go"> &#39;interface&#39;: {&#39;hardwareName&#39;: &#39;GigabitEthernet0/0&#39;,</span>
+<span class="go">               &#39;id&#39;: &#39;8d6c41df-3e5f-465b-8e5a-d336b282f93f&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;outside&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;h4kqp4iu2yvff&#39;},</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devicesettings/default/dhcpservercontainers/a47ce00c-fe55-11e4-8e99-f73968181bfd&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;DHCP-Server-Container&#39;,</span>
+<span class="go"> &#39;primaryDNS&#39;: None,</span>
+<span class="go"> &#39;primaryWINS&#39;: None,</span>
+<span class="go"> &#39;secondaryDNS&#39;: None,</span>
+<span class="go"> &#39;secondaryWINS&#39;: None,</span>
+<span class="go"> &#39;servers&#39;: [{&#39;addressPool&#39;: &#39;192.168.45.46-192.168.45.254&#39;,</span>
+<span class="go">              &#39;enableDHCP&#39;: True,</span>
+<span class="go">              &#39;interface&#39;: {&#39;hardwareName&#39;: &#39;GigabitEthernet0/1&#39;,</span>
+<span class="go">                            &#39;id&#39;: &#39;ad6a9497-4d44-11eb-9e04-63d0b1958967&#39;,</span>
+<span class="go">                            &#39;name&#39;: &#39;inside&#39;,</span>
+<span class="go">                            &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                            &#39;version&#39;: &#39;eqotynhtlcuyf&#39;},</span>
+<span class="go">              &#39;type&#39;: &#39;dhcpserver&#39;},</span>
+<span class="go">             {&#39;addressPool&#39;: &#39;192.168.133.8-192.168.133.100&#39;,</span>
+<span class="go">              &#39;enableDHCP&#39;: False,</span>
+<span class="go">              &#39;interface&#39;: {&#39;hardwareName&#39;: &#39;GigabitEthernet0/2&#39;,</span>
+<span class="go">                            &#39;id&#39;: &#39;aeb5b238-4d44-11eb-9e04-cd44159d2943&#39;,</span>
+<span class="go">                            &#39;name&#39;: &#39;dmz&#39;,</span>
+<span class="go">                            &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                            &#39;version&#39;: &#39;ojwiwyovklamk&#39;},</span>
+<span class="go">              &#39;type&#39;: &#39;dhcpserver&#39;}],</span>
+<span class="go"> &#39;type&#39;: &#39;dhcpservercontainer&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;eb6ciywtkaqs4&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_hostname">
+<code class="sig-name descname">get_hostname</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#firepyer.Fdm.get_hostname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the hostname of the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The hostname</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_syslog_servers">
+<code class="sig-name descname">get_syslog_servers</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_syslog_servers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all SyslogServers or a single SyslogServer if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the SyslogServer to find. The name is stored in the format IP:PORT, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all SyslogServers if no name is provided, or a dict of the single SyslogServer with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_syslog_servers</span><span class="p">()</span>
+<span class="go">[{&#39;deviceInterface&#39;: {&#39;hardwareName&#39;: &#39;GigabitEthernet0/1&#39;,</span>
+<span class="go">                      &#39;id&#39;: &#39;ad6a9497-4d44-11eb-9e04-63d0b1958967&#39;,</span>
+<span class="go">                      &#39;name&#39;: &#39;inside&#39;,</span>
+<span class="go">                      &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                      &#39;version&#39;: &#39;eqotynhtlcuyf&#39;},</span>
+<span class="go">  &#39;host&#39;: &#39;192.168.0.53&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;00f2c4e0-52cf-11eb-aab5-55a503dce30e&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/syslogalerts/00f2c4e0-52cf-11eb-aab5-55a503dce30e&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;192.168.0.53:514&#39;,</span>
+<span class="go">  &#39;port&#39;: &#39;514&#39;,</span>
+<span class="go">  &#39;protocol&#39;: &#39;UDP&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;syslogserver&#39;,</span>
+<span class="go">  &#39;useManagementInterface&#39;: False,</span>
+<span class="go">  &#39;version&#39;: &#39;gz7i7ht2njk6r&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_system_info">
+<code class="sig-name descname">get_system_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.get_system_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets system information such as software versions, device model, serial number and management details</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The target FTD system information</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_system_info</span><span class="p">()</span>
+<span class="go">{&#39;applianceUuid&#39;: &#39;12345678-1234-1234-1234-123456789abc&#39;,</span>
+<span class="go"> &#39;currentTime&#39;: 1610202358116,</span>
+<span class="go"> &#39;databaseInfo&#39;: {&#39;buildVersion&#39;: &#39;6.6.1&#39;,</span>
+<span class="go">                  &#39;configDBVersion&#39;: &#39;itrncf35kvb2q&#39;,</span>
+<span class="go">                  &#39;firewallConfigChecksum&#39;: &#39;kptuzmstdl7ve&#39;,</span>
+<span class="go">                  &#39;id&#39;: &#39;00000001-0000-0000-0000-000000000001&#39;,</span>
+<span class="go">                  &#39;isBootstrapSuccessFul&#39;: True,</span>
+<span class="go">                  &#39;restoredFromBackup&#39;: &#39;NONE&#39;,</span>
+<span class="go">                  &#39;schemaVersion&#39;: &#39;91&#39;,</span>
+<span class="go">                  &#39;softwareVersion&#39;: &#39;6.6.1-91&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;databaseinfo&#39;},</span>
+<span class="go"> &#39;geolocationVersion&#39;: {&#39;geolocationDbVersion&#39;: None,</span>
+<span class="go">                        &#39;id&#39;: &#39;e2822936-b3ff-11e5-b2b0-75809939b187&#39;,</span>
+<span class="go">                        &#39;lastSuccessGeolocationDate&#39;: None,</span>
+<span class="go">                        &#39;name&#39;: None,</span>
+<span class="go">                        &#39;type&#39;: &#39;geolocationversion&#39;},</span>
+<span class="go"> &#39;id&#39;: &#39;default&#39;,</span>
+<span class="go"> &#39;ipv4&#39;: &#39;192.168.133.7&#39;,</span>
+<span class="go"> &#39;ipv6&#39;: None,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/operational/systeminfo/default&#39;},</span>
+<span class="go"> &#39;managementInterfaceName&#39;: &#39;br1&#39;,</span>
+<span class="go"> &#39;modelId&#39;: &#39;B&#39;,</span>
+<span class="go"> &#39;modelNumber&#39;: &#39;75&#39;,</span>
+<span class="go"> &#39;platformModel&#39;: &#39;Cisco Firepower Threat Defense for KVM&#39;,</span>
+<span class="go"> &#39;securityIntelligenceFeedsInfo&#39;: {&#39;id&#39;: &#39;f78b4875-4d43-11eb-9e04-838d9f38aad2&#39;,</span>
+<span class="go">                                   &#39;lastFeedsUpdateDate&#39;: None,</span>
+<span class="go">                                   &#39;type&#39;: &#39;securityintelligencefeedsinfo&#39;},</span>
+<span class="go"> &#39;serialNumber&#39;: &#39;123ABC123AB&#39;,</span>
+<span class="go"> &#39;snortVersion&#39;: {&#39;id&#39;: &#39;00000003-0000-0000-0000-000000000003&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;2.9.16-1025&#39;,</span>
+<span class="go">                  &#39;snortPackage&#39;: &#39;/ngfw/var/sf/snort-2.9.16-1025/snort-75-2.9.16-1025-daq11.tar.bz2&#39;,</span>
+<span class="go">                  &#39;snortVersion&#39;: &#39;2.9.16-1025&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;snortversion&#39;},</span>
+<span class="go"> &#39;softwareVersion&#39;: &#39;6.6.1-91&#39;,</span>
+<span class="go"> &#39;sruVersion&#39;: {&#39;id&#39;: &#39;00000003-0000-0000-0000-000000000001&#39;,</span>
+<span class="go">                &#39;lastSuccessSRUDate&#39;: &#39;2021-01-02 23:12:33Z&#39;,</span>
+<span class="go">                &#39;name&#39;: &#39;2020-08-18-001-vrt&#39;,</span>
+<span class="go">                &#39;soMd5Checksum&#39;: &#39;f49e3ed1bfe85316b8b050ebfa99e52b&#39;,</span>
+<span class="go">                &#39;sruVersion&#39;: &#39;2020-08-18-001-vrt&#39;,</span>
+<span class="go">                &#39;type&#39;: &#39;sruversion&#39;},</span>
+<span class="go"> &#39;systemUptime&#39;: 1609628582697,</span>
+<span class="go"> &#39;type&#39;: &#39;systeminformation&#39;,</span>
+<span class="go"> &#39;vdbVersion&#39;: {&#39;appIDRevision&#39;: &#39;74&#39;,</span>
+<span class="go">                &#39;id&#39;: &#39;00000003-0000-0000-0000-000000000002&#39;,</span>
+<span class="go">                &#39;lastSuccessVDBDate&#39;: None,</span>
+<span class="go">                &#39;name&#39;: &#39;336&#39;,</span>
+<span class="go">                &#39;navlRevision&#39;: &#39;98&#39;,</span>
+<span class="go">                &#39;type&#39;: &#39;vdbversion&#39;,</span>
+<span class="go">                &#39;vdbCurrentBuild&#39;: &#39;0&#39;,</span>
+<span class="go">                &#39;vdbCurrentVersion&#39;: &#39;336&#39;,</span>
+<span class="go">                &#39;vdbReleaseDate&#39;: &#39;2020-06-15 16:38:24&#39;}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.send_command">
+<code class="sig-name descname">send_command</code><span class="sig-paren">(</span><em class="sig-param">cmd: str</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.send_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a CLI command to the FTD device and return the output</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cmd</strong> (<em>str</em>) – The full command to be sent to the CLI, abbreviations aren’t supported</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The output from entering the command or None if the command failed</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">send_command</span><span class="p">(</span><span class="s1">&#39;show interface ip brief&#39;</span><span class="p">)</span>
+<span class="go">Interface                  IP-Address      OK? Method Status                Protocol</span>
+<span class="go">GigabitEthernet0/0         unassigned      YES DHCP   up                    up</span>
+<span class="go">GigabitEthernet0/1         192.168.45.1    YES manual up                    up</span>
+<span class="go">GigabitEthernet0/2         unassigned      YES unset  administratively down up</span>
+<span class="go">GigabitEthernet0/3         unassigned      YES unset  administratively down up</span>
+<span class="go">Internal-Control0/0        127.0.1.1       YES unset  up                    up</span>
+<span class="go">Internal-Control0/1        unassigned      YES unset  up                    up</span>
+<span class="go">Internal-Data0/0           unassigned      YES unset  down                  up</span>
+<span class="go">Internal-Data0/0           unassigned      YES unset  up                    up</span>
+<span class="go">Internal-Data0/1           169.254.1.1     YES unset  up                    up</span>
+<span class="go">Internal-Data0/2           unassigned      YES unset  up                    up</span>
+<span class="go">Management0/0              unassigned      YES unset  up                    up</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.set_hostname">
+<code class="sig-name descname">set_hostname</code><span class="sig-paren">(</span><em class="sig-param">hostname</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.set_hostname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the hostname of the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>hostname</strong> (<em>str</em>) – The hostname to set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The full requests response object or None if an error occurred</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="updates">
+<h2>Updates<a class="headerlink" href="#updates" title="Permalink to this headline">¶</a></h2>
+<p>Methods for updating various rule files</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.update_intrusion_rules">
+<code class="sig-name descname">update_intrusion_rules</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.update_intrusion_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Immediately update the intrusion ruleset (SRU)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Rule update job object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">update_intrusion_rules</span><span class="p">()</span>
+<span class="go">{&#39;deployAfterUpdate&#39;: False,</span>
+<span class="go"> &#39;description&#39;: None,</span>
+<span class="go"> &#39;forceOperation&#39;: False,</span>
+<span class="go"> &#39;forceUpdate&#39;: False,</span>
+<span class="go"> &#39;id&#39;: &#39;ddbc819d-840a-11eb-ab2b-479260419be4&#39;,</span>
+<span class="go"> &#39;ipAddress&#39;: &#39;192.168.133.100&#39;,</span>
+<span class="go"> &#39;jobHistoryUuid&#39;: &#39;ddccfc5e-840a-11eb-ab2b-4dced09e21e1&#39;,</span>
+<span class="go"> &#39;jobName&#39;: &#39;Rule Update&#39;,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/action/updatesru/ddbc819d-840a-11eb-ab2b-479260419be4&#39;},</span>
+<span class="go"> &#39;name&#39;: None,</span>
+<span class="go"> &#39;scheduleType&#39;: &#39;IMMEDIATE&#39;,</span>
+<span class="go"> &#39;sruImmediateJobType&#39;: &#39;SRU_UPDATE&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;sruupdateimmediate&#39;,</span>
+<span class="go"> &#39;user&#39;: &#39;admin&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;ivefnacxlum6b&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.update_vdb">
+<code class="sig-name descname">update_vdb</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.update_vdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Immediately update the Vulnerability Database (VDB)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>VDB update job object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.update_geolocation">
+<code class="sig-name descname">update_geolocation</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.update_geolocation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Immediately update the Geolocation Database (GeoDB)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>GeoDB update job object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.upload_intrusion_rule_file">
+<code class="sig-name descname">upload_intrusion_rule_file</code><span class="sig-paren">(</span><em class="sig-param">filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.upload_intrusion_rule_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uploads an intrusion rule update (SRU) file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Relative filepath and name of the SRU tar file to upload</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Uploaded file object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.upload_geolocation_file">
+<code class="sig-name descname">upload_geolocation_file</code><span class="sig-paren">(</span><em class="sig-param">filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.upload_geolocation_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uploads a Geolocation Database (GeoDB) update file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Relative filepath and name of the GeoDB tar file to upload</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Uploaded file object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.upload_vdb_file">
+<code class="sig-name descname">upload_vdb_file</code><span class="sig-paren">(</span><em class="sig-param">filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.upload_vdb_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uploads a Vulnerability Database (VDB) update file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Relative filepath and name of the VDB tar file to upload</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Uploaded file object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">upload_vdb_file</span><span class="p">(</span><span class="s1">&#39;uploads/Cisco_VDB_Fingerprint_Database-4.5.0-337.sh.REL.tar&#39;</span><span class="p">)</span>
+<span class="go">{&#39;checkSum&#39;: &#39;231e053a4d9de54e7c03a6e64338c5039150a69c693907c6361a9f115f5e78a4f7f0f05ba98d1bd6f835f0d0b0504b582c70b0485b308b6095841e5de157b1bb&#39;,</span>
+<span class="go"> &#39;fileName&#39;: &#39;Cisco_VDB_Fingerprint_Database-4.5.0-337.sh.REL.tar&#39;,</span>
+<span class="go"> &#39;id&#39;: None,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/action/updatevdbfromfile/null&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;Cisco_VDB_Fingerprint_Database-4.5.0-337.sh.REL.tar&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;vdbfileupload&#39;,</span>
+<span class="go"> &#39;version&#39;: None}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="upgrades">
+<h2>Upgrades<a class="headerlink" href="#upgrades" title="Permalink to this headline">¶</a></h2>
+<p>Methods for performing system upgrades</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.get_upgrade_files">
+<code class="sig-name descname">get_upgrade_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[dict]<a class="headerlink" href="#firepyer.Fdm.get_upgrade_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets upgrade files that have been uploaded to the FTD appliance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of upgrade file objects in dict form</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[dict]</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_upgrade_files</span><span class="p">()</span>
+<span class="go">[{&#39;fileSize&#39;: 1288104,</span>
+<span class="go">  &#39;id&#39;: &#39;dff28977-4d48-11eb-ad95-5dbe3d6f985f&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/managedentity/upgradefiles/dff28977-4d48-11eb-ad95-5dbe3d6f985f&#39;},</span>
+<span class="go">  &#39;rebootRequired&#39;: True,</span>
+<span class="go">  &#39;type&#39;: &#39;upgradefile&#39;,</span>
+<span class="go">  &#39;updateVersion&#39;: &#39;6.6.1-91&#39;,</span>
+<span class="go">  &#39;upgradeCancelOnFailureDefault&#39;: None,</span>
+<span class="go">  &#39;upgradeFileName&#39;: &#39;Cisco_FTD_Upgrade-6.6.1-91.sh.REL.tar&#39;,</span>
+<span class="go">  &#39;upgradeFrom&#39;: &#39;6.2.3&#39;,</span>
+<span class="go">  &#39;upgradeType&#39;: &#39;Cisco FTD Upgrade&#39;,</span>
+<span class="go">  &#39;uploadDate&#39;: &#39;Sat Jan 02 22:21:35 UTC 2021&#39;,</span>
+<span class="go">  &#39;user&#39;: &#39;admin&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;eujn2nhpfebcl&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.upload_upgrade">
+<code class="sig-name descname">upload_upgrade</code><span class="sig-paren">(</span><em class="sig-param">filename: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.upload_upgrade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uploads an FTD Upgrade file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Relative filepath and name of the FTD Upgrade tar file to upload</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Uploaded file object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="policies.html" class="btn btn-neutral float-left" title="Security Policies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Cockerill, Certa Networks.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

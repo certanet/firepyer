@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Networks &mdash; Firepyer 0.0.7 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Ports" href="ports.html" />
+    <link rel="prev" title="Interface &amp; Security Zones" href="interfaces.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Firepyer<img src="_static/firepyer-logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Firepyer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using.html">Using Firepyer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployments.html">Deployments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">Interfaces &amp; Zones</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ports.html">Ports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policies.html">Security Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">System</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change.html">Change Log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Firepyer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Networks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="networks">
+<h1>Networks<a class="headerlink" href="#networks" title="Permalink to this headline">¶</a></h1>
+<p>Network Objects and Network Groups are used to store IP networks or hosts
+as variables, that can be used in Access Policy rules etc.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.create_net_group">
+<code class="sig-name descname">create_net_group</code><span class="sig-paren">(</span><em class="sig-param">name: str, objects: List[str], description: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_net_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a NetworkGroup object, containing at least 1 existing Network or NetworkGroup object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the NetworkGroup to be created</p></li>
+<li><p><strong>objects</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Names of the Network or NetworkGroup objects to be added to the group</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the NetworkGroup, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerResourceNotFound" title="firepyer.exceptions.FirepyerResourceNotFound"><strong>FirepyerResourceNotFound</strong></a> – If any of the given object names do not exist</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The created NetworkGroup object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_net_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GROUP-HOST1&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;GROUP-HOST1&#39;</span><span class="p">,</span> <span class="n">objects</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Host1-NIC1&#39;</span><span class="p">,</span> <span class="s1">&#39;Host1-NIC2&#39;</span><span class="p">])</span>
+<span class="go">{&#39;description&#39;: &#39;GROUP-HOST1&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;26dbfd53-4db6-11eb-aab5-4dba63992bb3&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networkgroups/26dbfd53-4db6-11eb-aab5-4dba63992bb3&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;GROUP-HOST1&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;jpfwstwwapru5&#39;},</span>
+<span class="go">              {&#39;id&#39;: &#39;9ffc3fa6-4db5-11eb-aab5-23e5ffdb3f0d&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;Host1-NIC2&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;joq4kyvc4ztx5&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;lcplbsj24ebva&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.create_network">
+<code class="sig-name descname">create_network</code><span class="sig-paren">(</span><em class="sig-param">name: str</em>, <em class="sig-param">value: str</em>, <em class="sig-param">type: str = 'HOST'</em>, <em class="sig-param">description: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.create_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a network Host, FQDN, Network or Range object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the object</p></li>
+<li><p><strong>value</strong> (<em>str</em>) – Value of the object, depending on type e.g. Host would be an IP address, Network would be a CIDR network etc.</p></li>
+<li><p><strong>type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of Network object to create, defaults to ‘HOST’</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – Description of the object, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerInvalidOption" title="firepyer.exceptions.FirepyerInvalidOption"><strong>FirepyerInvalidOption</strong></a> – If the type is not one of “HOST”, “FQDN”, “NETWORK” or “RANGE”</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Network object that has been created</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">create_network</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;RFC-1918-172&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;172.16.0.0/12&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;network&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: None,</span>
+<span class="go"> &#39;dnsResolution&#39;: &#39;IPV4_ONLY&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;f8b81657-793a-11eb-b948-fbbf2c1ae1be&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networks/f8b81657-793a-11eb-b948-fbbf2c1ae1be&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;RFC-1918-172&#39;,</span>
+<span class="go"> &#39;subType&#39;: &#39;NETWORK&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go"> &#39;value&#39;: &#39;172.16.0.0/12&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;oani42zndwyl5&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.delete_network">
+<code class="sig-name descname">delete_network</code><span class="sig-paren">(</span><em class="sig-param">net_id: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#firepyer.Fdm.delete_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a NetworkObject</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>net_id</strong> (<em>str</em>) – NetworkObject id</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerResourceNotFound" title="firepyer.exceptions.FirepyerResourceNotFound"><strong>FirepyerResourceNotFound</strong></a> – If a NetworkObject with the given id does not exist</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the object is successfully deleted</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.delete_network_group">
+<code class="sig-name descname">delete_network_group</code><span class="sig-paren">(</span><em class="sig-param">grp_id: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#firepyer.Fdm.delete_network_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a NetworkGroup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grp_id</strong> (<em>str</em>) – NetworkGroup id</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="using.html#firepyer.exceptions.FirepyerResourceNotFound" title="firepyer.exceptions.FirepyerResourceNotFound"><strong>FirepyerResourceNotFound</strong></a> – If a NetworkGroup with the given id does not exist</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the object is successfully deleted</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_net_groups">
+<code class="sig-name descname">get_net_groups</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_net_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all NetworkGroups or a single NetworkGroup if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of a NetworkGroup to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all NetworkGroups if no name is provided, or a dict of the single NetworkGroup with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_net_groups</span><span class="p">()</span>
+<span class="go">[{&#39;description&#39;: &#39;GROUP-HOST1&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;26dbfd53-4db6-11eb-aab5-4dba63992bb3&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networkgroups/26dbfd53-4db6-11eb-aab5-4dba63992bb3&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;GROUP-HOST1&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;jpfwstwwapru5&#39;},</span>
+<span class="go">              {&#39;id&#39;: &#39;9ffc3fa6-4db5-11eb-aab5-23e5ffdb3f0d&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;Host1-NIC2&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;joq4kyvc4ztx5&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;lcplbsj24ebva&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;GROUP-HOST2&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;28368446-4db6-11eb-aab5-b7a83f9515f7&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networkgroups/28368446-4db6-11eb-aab5-b7a83f9515f7&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;GROUP-HOST2&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;a13ab322-4db5-11eb-aab5-5330425fbd55&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;Host2-NIC1&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;ddha6de2szejr&#39;},</span>
+<span class="go">              {&#39;id&#39;: &#39;a183f125-4db5-11eb-aab5-4b89ea1eb596&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;Host2-NIC2&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;makivftpuepn&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;d7fsrmu7qvlna&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;GROUP-ALL-HOSTS&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;2904a9b9-4db6-11eb-aab5-93170f9c3b34&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networkgroups/2904a9b9-4db6-11eb-aab5-93170f9c3b34&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;GROUP-ALL-HOSTS&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;26dbfd53-4db6-11eb-aab5-4dba63992bb3&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;GROUP-HOST1&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;lcplbsj24ebva&#39;},</span>
+<span class="go">              {&#39;id&#39;: &#39;28368446-4db6-11eb-aab5-b7a83f9515f7&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;GROUP-HOST2&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;d7fsrmu7qvlna&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;i4oe7b4lpaxos&#39;}]</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_net_groups</span><span class="p">(</span><span class="s1">&#39;GROUP-ALL-HOSTS&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: &#39;GROUP-ALL-HOSTS&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;2904a9b9-4db6-11eb-aab5-93170f9c3b34&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networkgroups/2904a9b9-4db6-11eb-aab5-93170f9c3b34&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;GROUP-ALL-HOSTS&#39;,</span>
+<span class="go">  &#39;objects&#39;: [{&#39;id&#39;: &#39;26dbfd53-4db6-11eb-aab5-4dba63992bb3&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;GROUP-HOST1&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;lcplbsj24ebva&#39;},</span>
+<span class="go">              {&#39;id&#39;: &#39;28368446-4db6-11eb-aab5-b7a83f9515f7&#39;,</span>
+<span class="go">               &#39;name&#39;: &#39;GROUP-HOST2&#39;,</span>
+<span class="go">               &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">               &#39;version&#39;: &#39;d7fsrmu7qvlna&#39;}],</span>
+<span class="go">  &#39;type&#39;: &#39;networkobjectgroup&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;i4oe7b4lpaxos&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_net_objects">
+<code class="sig-name descname">get_net_objects</code><span class="sig-paren">(</span><em class="sig-param">name=''</em>, <em class="sig-param">must_find: bool = False</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_net_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all NetworkObjects or a single NetworkObject if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the NetworkObject to find, defaults to ‘’</p></li>
+<li><p><strong>must_find</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies if an exception should be raised if the resource isn’t found, defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all NetworkObjects if no name is provided, or a dict of the single NetworkObject with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_net_objects</span><span class="p">()</span>
+<span class="go">[{&#39;description&#39;: None,</span>
+<span class="go">  &#39;dnsResolution&#39;: None,</span>
+<span class="go">  &#39;id&#39;: &#39;00f7b297-4d44-11eb-9e04-13721b05d633&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: True,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networks/00f7b297-4d44-11eb-9e04-13721b05d633&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;any-ipv4&#39;,</span>
+<span class="go">  &#39;subType&#39;: &#39;NETWORK&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">  &#39;value&#39;: &#39;0.0.0.0/0&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;kxd2dzxm2gtwn&#39;},</span>
+<span class="go"> {&#39;description&#39;: None,</span>
+<span class="go">  &#39;dnsResolution&#39;: None,</span>
+<span class="go">  &#39;id&#39;: &#39;0107df38-4d44-11eb-9e04-5b0093cb3558&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: True,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networks/0107df38-4d44-11eb-9e04-5b0093cb3558&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;any-ipv6&#39;,</span>
+<span class="go">  &#39;subType&#39;: &#39;NETWORK&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">  &#39;value&#39;: &#39;::/0&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;ezvnwzxqrq6pj&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;HOST1-NIC1&#39;,</span>
+<span class="go">  &#39;dnsResolution&#39;: &#39;IPV4_ONLY&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networks/9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go">  &#39;subType&#39;: &#39;HOST&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">  &#39;value&#39;: &#39;10.0.1.1&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;jpfwstwwapru5&#39;},</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_net_objects</span><span class="p">(</span><span class="s1">&#39;Host1-NIC1&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: &#39;HOST1-NIC1&#39;,</span>
+<span class="go"> &#39;dnsResolution&#39;: &#39;IPV4_ONLY&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networks/9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go"> &#39;subType&#39;: &#39;HOST&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go"> &#39;value&#39;: &#39;10.0.1.1&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;jpfwstwwapru5&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_net_obj_or_grp">
+<code class="sig-name descname">get_net_obj_or_grp</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.get_net_obj_or_grp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a NetworkObject or NetworkGroup by the given name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the object/group to retrieve</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Single dict describing the object, if a resource with the name is found</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_net_obj_or_grp</span><span class="p">(</span><span class="s1">&#39;Host1-NIC1&#39;</span><span class="p">)</span>
+<span class="go">{&#39;description&#39;: &#39;HOST1-NIC1&#39;,</span>
+<span class="go"> &#39;dnsResolution&#39;: &#39;IPV4_ONLY&#39;,</span>
+<span class="go"> &#39;id&#39;: &#39;9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;,</span>
+<span class="go"> &#39;isSystemDefined&#39;: False,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/object/networks/9f42dab3-4db5-11eb-aab5-19160f885ae8&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;Host1-NIC1&#39;,</span>
+<span class="go"> &#39;subType&#39;: &#39;HOST&#39;,</span>
+<span class="go"> &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go"> &#39;value&#39;: &#39;10.0.1.1&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;jpfwstwwapru5&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="interfaces.html" class="btn btn-neutral float-left" title="Interface &amp; Security Zones" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ports.html" class="btn btn-neutral float-right" title="Ports" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Cockerill, Certa Networks.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

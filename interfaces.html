@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interface &amp; Security Zones &mdash; Firepyer 0.0.7 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Networks" href="networks.html" />
+    <link rel="prev" title="Deployments" href="deployments.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Firepyer<img src="_static/firepyer-logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Firepyer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using.html">Using Firepyer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployments.html">Deployments</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Interfaces &amp; Zones</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#etherchannels">EtherChannels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interfaces">Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#security-zones">Security Zones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sub-interfaces">Sub-Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ports.html">Ports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policies.html">Security Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">System</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change.html">Change Log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Firepyer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Interface &amp; Security Zones</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="interface-security-zones">
+<h1>Interface &amp; Security Zones<a class="headerlink" href="#interface-security-zones" title="Permalink to this headline">¶</a></h1>
+<p>Interact with physical/logical interfaces and security zones.</p>
+<div class="section" id="etherchannels">
+<h2>EtherChannels<a class="headerlink" href="#etherchannels" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="interfaces">
+<h2>Interfaces<a class="headerlink" href="#interfaces" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.get_interfaces">
+<code class="sig-name descname">get_interfaces</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_interfaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all Interfaces or a single Interface if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the Interface to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all Interfaces if no name is provided, or a dict of the single Interface with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="security-zones">
+<h2>Security Zones<a class="headerlink" href="#security-zones" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.create_security_zone">
+<code class="sig-name descname">create_security_zone</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">description=''</em>, <em class="sig-param">interfaces=[]</em>, <em class="sig-param">phy_interfaces=[]</em>, <em class="sig-param">mode='ROUTED'</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.create_security_zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a security zone</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – str The name of the Security Zone</p></li>
+<li><p><strong>description</strong> – str Description</p></li>
+<li><p><strong>interfaces</strong> – list The logical names of any Interfaces to be part of this Security Zone e.g. inside</p></li>
+<li><p><strong>phy_interfaces</strong> – list The physical names of any Interfaces to be part of this Security Zone e.g. GigabitEthernet0/0</p></li>
+<li><p><strong>mode</strong> – str The mode of the Security Zone, either ROUTED or PASSIVE</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_security_zones">
+<code class="sig-name descname">get_security_zones</code><span class="sig-paren">(</span><em class="sig-param">name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_security_zones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all SecurityZones or a single SecurityZone if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the SecurityZone to find, defaults to ‘’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all SecurityZones if no name is provided, or a dict of the single SecurityZone with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sub-interfaces">
+<h2>Sub-Interfaces<a class="headerlink" href="#sub-interfaces" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="deployments.html" class="btn btn-neutral float-left" title="Deployments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="networks.html" class="btn btn-neutral float-right" title="Networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Cockerill, Certa Networks.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routing &mdash; Firepyer 0.0.7 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Security Policies" href="policies.html" />
+    <link rel="prev" title="Ports" href="ports.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Firepyer<img src="_static/firepyer-logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.0.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Firepyer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using.html">Using Firepyer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployments.html">Deployments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">Interfaces &amp; Zones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ports.html">Ports</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Routing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bgp">BGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ospf">OSPF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vrfs">VRFs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="policies.html">Security Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">System</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change.html">Change Log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Firepyer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Routing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="routing">
+<h1>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h1>
+<p>View and configure routing for the FTD device, including VRFs, static routes, OSPF and BGP.</p>
+<div class="section" id="bgp">
+<h2>BGP<a class="headerlink" href="#bgp" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.get_bgp_general_settings">
+<code class="sig-name descname">get_bgp_general_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_bgp_general_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the device’s general BGP settings if any are set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The BGPGeneralSettings object or None if none are set</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_bgp_general_settings</span><span class="p">()</span>
+<span class="go">{&#39;aggregateTimer&#39;: 30,</span>
+<span class="go"> &#39;asNumber&#39;: &#39;65500&#39;,</span>
+<span class="go"> &#39;asnotationDot&#39;: False,</span>
+<span class="go"> &#39;bgpBestPath&#39;: {&#39;alwaysCompareMed&#39;: False,</span>
+<span class="go">                 &#39;bestPathCompareRouterId&#39;: False,</span>
+<span class="go">                 &#39;bestPathMedMissingAsWorst&#39;: False,</span>
+<span class="go">                 &#39;defaultLocalPreferenceValue&#39;: 100,</span>
+<span class="go">                 &#39;deterministicMed&#39;: False,</span>
+<span class="go">                 &#39;type&#39;: &#39;bgpbestpath&#39;},</span>
+<span class="go"> &#39;bgpGracefulRestart&#39;: None,</span>
+<span class="go"> &#39;bgpNextHopTriggerDelay&#39;: 5,</span>
+<span class="go"> &#39;bgpNextHopTriggerEnable&#39;: True,</span>
+<span class="go"> &#39;bgpTimers&#39;: {&#39;holdTime&#39;: 180,</span>
+<span class="go">               &#39;keepAlive&#39;: 60,</span>
+<span class="go">               &#39;minHoldTime&#39;: 0,</span>
+<span class="go">               &#39;type&#39;: &#39;bgptimers&#39;},</span>
+<span class="go"> &#39;description&#39;: None,</span>
+<span class="go"> &#39;enforceFirstAs&#39;: True,</span>
+<span class="go"> &#39;fastExternalFallOver&#39;: True,</span>
+<span class="go"> &#39;id&#39;: &#39;12345678-1234-1234-1234-123456789abc&#39;,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/bgpgeneralsettings/12345678-1234-1234-1234-123456789abc&#39;},</span>
+<span class="go"> &#39;logNeighborChanges&#39;: True,</span>
+<span class="go"> &#39;maxasLimit&#39;: None,</span>
+<span class="go"> &#39;name&#39;: &#39;BgpGeneralSettings&#39;,</span>
+<span class="go"> &#39;routerId&#39;: None,</span>
+<span class="go"> &#39;scanTime&#39;: 60,</span>
+<span class="go"> &#39;transportPathMtuDiscovery&#39;: True,</span>
+<span class="go"> &#39;type&#39;: &#39;bgpgeneralsettings&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;omg123ffsabcd&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.set_bgp_general_settings">
+<code class="sig-name descname">set_bgp_general_settings</code><span class="sig-paren">(</span><em class="sig-param">asn: str</em>, <em class="sig-param">name='BgpGeneralSettings'</em>, <em class="sig-param">description=None</em>, <em class="sig-param">router_id=None</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.set_bgp_general_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the device’s general BGP settings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>asn</strong> (<em>str</em>) – The AS number for the BGP process</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – A name for the settings, defaults to ‘BgpGeneralSettings’</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the settings, defaults to None</p></li>
+<li><p><strong>router_id</strong> (<em>str</em><em>, </em><em>optional</em>) – A router ID for the BGP process, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The BGPGeneralSettings object instance created</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">set_bgp_general_settings</span><span class="p">(</span><span class="n">asn</span><span class="o">=</span><span class="s1">&#39;65500&#39;</span><span class="p">)</span>
+<span class="go">{&#39;aggregateTimer&#39;: 30,</span>
+<span class="go"> &#39;asNumber&#39;: &#39;65500&#39;,</span>
+<span class="go"> &#39;asnotationDot&#39;: False,</span>
+<span class="go"> &#39;bgpBestPath&#39;: {&#39;alwaysCompareMed&#39;: False,</span>
+<span class="go">                 &#39;bestPathCompareRouterId&#39;: False,</span>
+<span class="go">                 &#39;bestPathMedMissingAsWorst&#39;: False,</span>
+<span class="go">                 &#39;defaultLocalPreferenceValue&#39;: 100,</span>
+<span class="go">                 &#39;deterministicMed&#39;: False,</span>
+<span class="go">                 &#39;type&#39;: &#39;bgpbestpath&#39;},</span>
+<span class="go"> &#39;bgpGracefulRestart&#39;: None,</span>
+<span class="go"> &#39;bgpNextHopTriggerDelay&#39;: 5,</span>
+<span class="go"> &#39;bgpNextHopTriggerEnable&#39;: True,</span>
+<span class="go"> &#39;bgpTimers&#39;: {&#39;holdTime&#39;: 180,</span>
+<span class="go">               &#39;keepAlive&#39;: 60,</span>
+<span class="go">               &#39;minHoldTime&#39;: 0,</span>
+<span class="go">               &#39;type&#39;: &#39;bgptimers&#39;},</span>
+<span class="go"> &#39;description&#39;: None,</span>
+<span class="go"> &#39;enforceFirstAs&#39;: True,</span>
+<span class="go"> &#39;fastExternalFallOver&#39;: True,</span>
+<span class="go"> &#39;id&#39;: &#39;12345678-1234-1234-1234-123456789abc&#39;,</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/bgpgeneralsettings/12345678-1234-1234-1234-123456789abc&#39;},</span>
+<span class="go"> &#39;logNeighborChanges&#39;: True,</span>
+<span class="go"> &#39;maxasLimit&#39;: None,</span>
+<span class="go"> &#39;name&#39;: &#39;BgpGeneralSettings&#39;,</span>
+<span class="go"> &#39;routerId&#39;: None,</span>
+<span class="go"> &#39;scanTime&#39;: 60,</span>
+<span class="go"> &#39;transportPathMtuDiscovery&#39;: True,</span>
+<span class="go"> &#39;type&#39;: &#39;bgpgeneralsettings&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;omg123ffsabcd&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.get_bgp_settings">
+<code class="sig-name descname">get_bgp_settings</code><span class="sig-paren">(</span><em class="sig-param">vrf='Global'</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_bgp_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the BGP settings for a specifc VRF or the default (Global)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vrf</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of a VRF to get the BGP settings, defaults to ‘Global’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The BGPSettings object or None if none are set</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_bgp_settings</span><span class="p">()</span>
+<span class="go">{&#39;addressFamilyIPv4&#39;: {&#39;afTableMap&#39;: None,</span>
+<span class="go">                       &#39;aggregateAddressesIPv4s&#39;: [],</span>
+<span class="go">                       &#39;aggregateTimer&#39;: 30,</span>
+<span class="go">                       &#39;autoSummary&#39;: False,</span>
+<span class="go">                       &#39;bgpNextHopTriggerDelay&#39;: 5,</span>
+<span class="go">                       &#39;bgpNextHopTriggerEnable&#39;: True,</span>
+<span class="go">                       &#39;bgpRedistributeInternal&#39;: False,</span>
+<span class="go">                       &#39;bgpSupressInactive&#39;: False,</span>
+<span class="go">                       &#39;defaultInformationOrginate&#39;: False,</span>
+<span class="go">                       &#39;distance&#39;: {&#39;externalDistance&#39;: 20,</span>
+<span class="go">                                    &#39;internalDistance&#39;: 200,</span>
+<span class="go">                                    &#39;localDistance&#39;: 200,</span>
+<span class="go">                                    &#39;type&#39;: &#39;afbgpdistance&#39;},</span>
+<span class="go">                       &#39;distributeLists&#39;: [],</span>
+<span class="go">                       &#39;injectMaps&#39;: [],</span>
+<span class="go">                       &#39;maximumPaths&#39;: None,</span>
+<span class="go">                       &#39;neighbors&#39;: [],</span>
+<span class="go">                       &#39;networks&#39;: [],</span>
+<span class="go">                       &#39;redistributeProtocols&#39;: [],</span>
+<span class="go">                       &#39;scanTime&#39;: 60,</span>
+<span class="go">                       &#39;synchronization&#39;: False,</span>
+<span class="go">                       &#39;type&#39;: &#39;afipv4&#39;},</span>
+<span class="go"> &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/virtualrouters/12345678-1234-1234-1234-123456789abc/bgp/12345678-1234-1234-1234-123456789abc&#39;},</span>
+<span class="go"> &#39;name&#39;: &#39;bgp-general&#39;,</span>
+<span class="go"> &#39;routerId&#39;: None,</span>
+<span class="go"> &#39;type&#39;: &#39;bgp&#39;,</span>
+<span class="go"> &#39;version&#39;: &#39;omg123ffsabcd&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="firepyer.Fdm.set_bgp_settings">
+<code class="sig-name descname">set_bgp_settings</code><span class="sig-paren">(</span><em class="sig-param">asn</em>, <em class="sig-param">name=''</em>, <em class="sig-param">description=None</em>, <em class="sig-param">router_id=None</em>, <em class="sig-param">vrf='Global'</em>, <em class="sig-param">af=4</em>, <em class="sig-param">auto_summary=False</em>, <em class="sig-param">neighbours=[]</em>, <em class="sig-param">networks=[]</em>, <em class="sig-param">default_originate=False</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#firepyer.Fdm.set_bgp_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configures BGP settings for the give (or default) VRF</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>asn</strong> (<em>str</em>) – The AS Number of the BGP process, MUST be the same as in the BGPGeneralSettings</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name for the BGPSettings, MUST be unique across the device, defaults to ‘VRFNAME-BGPSettings’</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – Description for the BGPSettings, defaults to None</p></li>
+<li><p><strong>router_id</strong> (<em>str</em><em>, </em><em>optional</em>) – A router ID for the BGP process, defaults to None</p></li>
+<li><p><strong>vrf</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the VRF to configure BGP in, defaults to ‘Global’</p></li>
+<li><p><strong>af</strong> (<em>int</em><em>, </em><em>optional</em>) – BGP Address-Family to use, should be either [4, 6], defaults to 4</p></li>
+<li><p><strong>auto_summary</strong> (<em>bool</em><em>, </em><em>optional</em>) – Automatically summarise subnet routes to network routes, defaults to False</p></li>
+<li><p><strong>neighbours</strong> (<em>list</em><em>, </em><em>optional</em>) – Neighbours to add to the BGP process, each neighbour in the list should be a dict in format
+{“remoteAs”: “65001”, “activate”: True, “ipv4Address”: “192.168.1.1”}, defaults to []</p></li>
+<li><p><strong>networks</strong> (<em>list</em><em>, </em><em>optional</em>) – Names of NetworkObjects to add to as networks into the BGP, defaults to []</p></li>
+<li><p><strong>default_originate</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enable or disable default originate for BGP, defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The BGPSettings object instance created</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ospf">
+<h2>OSPF<a class="headerlink" href="#ospf" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.get_ospf_settings">
+<code class="sig-name descname">get_ospf_settings</code><span class="sig-paren">(</span><em class="sig-param">vrf='Global'</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="headerlink" href="#firepyer.Fdm.get_ospf_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the OSPF settings for a specifc VRF or the default (Global)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vrf</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of a VRF to get the OSPF settings, defaults to ‘Global’</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of all OSPFSettings objects, one per process ID</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[dict]</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_ospf_settings</span><span class="p">()</span>
+<span class="go">[{&#39;areas&#39;: [{&#39;areaId&#39;: &#39;0&#39;,</span>
+<span class="go">             &#39;areaNetworks&#39;: [{&#39;ipv4Network&#39;: {&#39;id&#39;: &#39;00f7b297-4d44-11eb-9e04-13721b05d633&#39;,</span>
+<span class="go">                                               &#39;name&#39;: &#39;any-ipv4&#39;,</span>
+<span class="go">                                               &#39;type&#39;: &#39;networkobject&#39;,</span>
+<span class="go">                                               &#39;version&#39;: &#39;kxd2dzxm2gtwn&#39;},</span>
+<span class="go">                               &#39;tagInterface&#39;: None,</span>
+<span class="go">                               &#39;type&#39;: &#39;areanetwork&#39;}],</span>
+<span class="go">             &#39;areaRanges&#39;: [],</span>
+<span class="go">             &#39;areaType&#39;: None,</span>
+<span class="go">             &#39;authentication&#39;: None,</span>
+<span class="go">             &#39;defaultCost&#39;: None,</span>
+<span class="go">             &#39;filterList&#39;: [],</span>
+<span class="go">             &#39;type&#39;: &#39;area&#39;,</span>
+<span class="go">             &#39;virtualLinks&#39;: []}],</span>
+<span class="go">  &#39;description&#39;: &#39;&#39;,</span>
+<span class="go">  &#39;filterRules&#39;: [],</span>
+<span class="go">  &#39;id&#39;: &#39;2edf8a2a-7948-11eb-b948-7146721ce7c1&#39;,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/virtualrouters/42e95fbf-fd5a-42bf-a95f-bffd5a42bfd6/ospf/2edf8a2a-7948-11eb-b948-7146721ce7c1&#39;},</span>
+<span class="go">  &#39;logAdjacencyChanges&#39;: {&#39;logType&#39;: &#39;DETAILED&#39;, &#39;type&#39;: &#39;logadjacencychanges&#39;},        </span>
+<span class="go">  &#39;name&#39;: &#39;OSPF-Settings&#39;,</span>
+<span class="go">  &#39;neighbors&#39;: [],</span>
+<span class="go">  &#39;processConfiguration&#39;: {&#39;administrativeDistance&#39;: {&#39;external&#39;: 110,</span>
+<span class="go">                                                      &#39;interArea&#39;: 110,</span>
+<span class="go">                                                      &#39;intraArea&#39;: 110,</span>
+<span class="go">                                                      &#39;type&#39;: &#39;administrativedistance&#39;},</span>
+<span class="go">                           &#39;defaultInformationOriginate&#39;: None,</span>
+<span class="go">                           &#39;ignoreLsaMospf&#39;: False,</span>
+<span class="go">                           &#39;nsfGracefulRestart&#39;: None,</span>
+<span class="go">                           &#39;rfc1583Compatible&#39;: None,</span>
+<span class="go">                           &#39;routerId&#39;: &#39;192.168.133.7&#39;,</span>
+<span class="go">                           &#39;timers&#39;: {&#39;floodPacing&#39;: 33,</span>
+<span class="go">                                      &#39;lsaArrival&#39;: 1000,</span>
+<span class="go">                                      &#39;lsaGroup&#39;: 240,</span>
+<span class="go">                                      &#39;lsaThrottleTimer&#39;: {&#39;initialDelay&#39;: 0,</span>
+<span class="go">                                                           &#39;maximumDelay&#39;: 5000,        </span>
+<span class="go">                                                           &#39;minimumDelay&#39;: 5000,        </span>
+<span class="go">                                                           &#39;type&#39;: &#39;lsathrottletimer&#39;}, </span>
+<span class="go">                                      &#39;retransmission&#39;: 66,</span>
+<span class="go">                                      &#39;spfThrottleTimer&#39;: {&#39;initialDelay&#39;: 5000,</span>
+<span class="go">                                                           &#39;maximumWaitTime&#39;: 10000,</span>
+<span class="go">                                                           &#39;minimumHoldTime&#39;: 10000,</span>
+<span class="go">                                                           &#39;type&#39;: &#39;spfthrottletimer&#39;},</span>
+<span class="go">                                      &#39;type&#39;: &#39;timers&#39;},</span>
+<span class="go">                           &#39;type&#39;: &#39;processconfiguration&#39;},</span>
+<span class="go">  &#39;processId&#39;: &#39;1&#39;,</span>
+<span class="go">  &#39;redistributeProtocols&#39;: [],</span>
+<span class="go">  &#39;summaryAddresses&#39;: [],</span>
+<span class="go">  &#39;type&#39;: &#39;ospf&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;bkgiho4cwbm4l&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="vrfs">
+<h2>VRFs<a class="headerlink" href="#vrfs" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">firepyer.</code><code class="sig-name descname">Fdm</code></dt>
+<dd><dl class="method">
+<dt id="firepyer.Fdm.get_vrfs">
+<code class="sig-name descname">get_vrfs</code><span class="sig-paren">(</span><em class="sig-param">name=''</em>, <em class="sig-param">must_find: bool = False</em><span class="sig-paren">)</span><a class="headerlink" href="#firepyer.Fdm.get_vrfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all VRFs or a single VRF if a name is provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of a VRF to find, defaults to ‘’</p></li>
+<li><p><strong>must_find</strong> (<em>bool</em><em>, </em><em>optional</em>) – Specifies if an exception should be raised if the resource isn’t found, defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all VRFs if no name is provided, or a dict of the single VRF with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list|dict</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fdm</span><span class="o">.</span><span class="n">get_vrfs</span><span class="p">()</span>
+<span class="go">[{&#39;description&#39;: &quot;Customer A&#39;s VRF&quot;,</span>
+<span class="go">  &#39;id&#39;: &#39;67e4d858-503d-11eb-aab5-2921a41f8ca3&#39;,</span>
+<span class="go">  &#39;interfaces&#39;: [{&#39;hardwareName&#39;: &#39;GigabitEthernet0/2&#39;,</span>
+<span class="go">                  &#39;id&#39;: &#39;aeb5b238-4d44-11eb-9e04-cd44159d2943&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;customer_a&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                  &#39;version&#39;: &#39;nh7piq3rw7pzs&#39;}],</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/virtualrouters/67e4d858-503d-11eb-aab5-2921a41f8ca3&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Customer-A&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;virtualrouter&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;crdwtc44cg5pu&#39;},</span>
+<span class="go"> {&#39;description&#39;: &quot;Customer B&#39;s VRF&quot;,</span>
+<span class="go">  &#39;id&#39;: &#39;7360254c-503d-11eb-aab5-41ec0935f001&#39;,</span>
+<span class="go">  &#39;interfaces&#39;: [{&#39;hardwareName&#39;: &#39;GigabitEthernet0/3&#39;,</span>
+<span class="go">                  &#39;id&#39;: &#39;afb288c9-4d44-11eb-9e04-41c0f86d8474&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;customer_b&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                  &#39;version&#39;: &#39;ocdhtp76zpfzz&#39;}],</span>
+<span class="go">  &#39;isSystemDefined&#39;: False,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/virtualrouters/7360254c-503d-11eb-aab5-41ec0935f001&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Customer-B&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;virtualrouter&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;nl7onsmfqdujm&#39;},</span>
+<span class="go"> {&#39;description&#39;: &#39;This is a Global Virtual Router&#39;,</span>
+<span class="go">  &#39;id&#39;: &#39;42e95fbf-fd5a-42bf-a95f-bffd5a42bfd6&#39;,</span>
+<span class="go">  &#39;interfaces&#39;: [{&#39;hardwareName&#39;: &#39;Management0/0&#39;,</span>
+<span class="go">                  &#39;id&#39;: &#39;b0b5a0ea-4d44-11eb-9e04-43089048338b&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;diagnostic&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                  &#39;version&#39;: &#39;inmqiea7woymm&#39;},</span>
+<span class="go">                 {&#39;hardwareName&#39;: &#39;GigabitEthernet0/1&#39;,</span>
+<span class="go">                  &#39;id&#39;: &#39;ad6a9497-4d44-11eb-9e04-63d0b1958967&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;inside&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                  &#39;version&#39;: &#39;eqotynhtlcuyf&#39;},</span>
+<span class="go">                 {&#39;hardwareName&#39;: &#39;GigabitEthernet0/0&#39;,</span>
+<span class="go">                  &#39;id&#39;: &#39;8d6c41df-3e5f-465b-8e5a-d336b282f93f&#39;,</span>
+<span class="go">                  &#39;name&#39;: &#39;outside&#39;,</span>
+<span class="go">                  &#39;type&#39;: &#39;physicalinterface&#39;,</span>
+<span class="go">                  &#39;version&#39;: &#39;h4kqp4iu2yvff&#39;}],</span>
+<span class="go">  &#39;isSystemDefined&#39;: True,</span>
+<span class="go">  &#39;links&#39;: {&#39;self&#39;: &#39;https://192.168.133.7/api/fdm/latest/devices/default/routing/virtualrouters/42e95fbf-fd5a-42bf-a95f-bffd5a42bfd6&#39;},</span>
+<span class="go">  &#39;name&#39;: &#39;Global&#39;,</span>
+<span class="go">  &#39;type&#39;: &#39;virtualrouter&#39;,</span>
+<span class="go">  &#39;version&#39;: &#39;cna3vbajed6et&#39;}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ports.html" class="btn btn-neutral float-left" title="Ports" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="policies.html" class="btn btn-neutral float-right" title="Security Policies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Cockerill, Certa Networks.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
