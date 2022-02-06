@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+* 0.0.7 - 2022-02-06
+    * Fixed issue instantiating Fdm
+    * Added tests
+
 * 0.0.6 - 2022-01-13
     * Fixed issue uploading update file in Windows enviornments
 
