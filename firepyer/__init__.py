@@ -11,7 +11,7 @@ from requests_toolbelt.multipart import encoder
 from firepyer.exceptions import FirepyerAuthError, FirepyerError, FirepyerInvalidOption, FirepyerResourceNotFound, FirepyerUnreachableError
 
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 
 class Fdm:
