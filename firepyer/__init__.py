@@ -55,7 +55,6 @@ class Fdm:
                                         data=data,
                                         headers=headers,
                                         verify=self.verify,
-                                        files=files,
                                         stream=stream)
             if response.status_code == 500:
                 raise FirepyerError('FTD presented a server error')
